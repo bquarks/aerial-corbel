@@ -44,27 +44,24 @@ AerialRestDriver = function (conf) {
       return;
     }
 
-    CH.get(adminToken, coll.name, {
+    _.each(CH.get(adminToken, coll.name, {
         pagination: {
           page: 1,
           pageSize: 50,
         },
-      },
-      (data) => {
-        _.each(data, (doc) => {
-          doc._id = doc.id;
+      }), (doc) => {
+        doc._id = doc.id;
 
-          try {
-            coll.insert(doc);
-          }
-          catch (e) {
+        try {
+          coll.insert(doc);
+        }
+        catch (e) {
 
-            let id = doc._id;
-            delete doc._id;
+          let id = doc._id;
+          delete doc._id;
 
-            coll.update(id, doc);
-          }
-        });
+          coll.update(id, doc);
+        }
       });
 
     // TODO: transform here the selector for the composr query.

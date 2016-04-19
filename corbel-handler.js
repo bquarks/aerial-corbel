@@ -1,4 +1,7 @@
 var Corbel = Npm.require('corbel-js'),
+    path = Npm.require('path'),
+    Fiber = Npm.require('fibers'),
+    Future = Npm.require(path.join('fibers', 'future')),
     clientConfig = null,
     CHInstance = null;
 
@@ -39,18 +42,21 @@ var CorbelHandler = function (conf) {
     }, cb);
   };
 
-  this.get = function (token, collection, getParams, cb) {
-    if (token && collection && getParams && cb) {
+  this.get = function (token, collection, getParams) {
+    if (token && collection && getParams) {
+      let future = new Future;
       getDriver(token).domain('booqs').resources
         .collection(collection).get(getParams)
         .then((res) => {
           if (res && res.data) {
-            cb(res.data);
+            future.return(res.data);
           }
         })
         .catch((e) => {
           throw e;
         });
+
+      return future.wait();
     } else {
       if (!token) {
         throw new TypeError('The first parameter must be a valid token object');
@@ -62,10 +68,6 @@ var CorbelHandler = function (conf) {
 
       if (!getParams) {
         throw new TypeError('The third parameter must be a valid get params object');
-      }
-
-      if (!cb) {
-        throw new TypeError('The four parameter must be a callback function');
       }
     }
   };
