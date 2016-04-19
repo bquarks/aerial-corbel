@@ -32,7 +32,6 @@ AerialRestDriver = function (conf) {
       password: 'admin',
     },
     (res) => {
-      console.log('Login');
       adminToken = res.data;
       this.configured = true;
     });

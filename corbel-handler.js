@@ -32,7 +32,6 @@ var CorbelHandler = function (conf) {
   });
 
   this.loginUserWithPassword = function (user, cb) {
-    console.log('Login user');
     makeLogin(clientDriver, {
       claims: {
         'basic_auth.username': user.name,
