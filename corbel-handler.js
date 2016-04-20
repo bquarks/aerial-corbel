@@ -43,9 +43,13 @@ var CorbelHandler = function (conf) {
 
   this.get = function (token, collection, getParams) {
     if (token && collection && getParams) {
-      let future = new Future;
+
+      let future = new Future,
+          query = QueryTranslator.query(getParams.selector);
+
+      console.log(query);
       getDriver(token).domain('booqs').resources
-        .collection(collection).get(getParams)
+        .collection(collection).get(query)
         .then((res) => {
           if (res && res.data) {
             future.return(res.data);
@@ -69,6 +73,14 @@ var CorbelHandler = function (conf) {
         throw new TypeError('The third parameter must be a valid get params object');
       }
     }
+  };
+
+  this.insert = function (token, collection, doc) {
+    // TODO: this couldn't be necesary
+  };
+
+  this.update = function (token, collection, data, condition) {
+
   };
 };
 

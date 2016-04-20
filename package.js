@@ -16,6 +16,7 @@ Package.describe({
 Package.onUse(function (api) {
   api.versionsFrom('1.3.1');
   api.use('ecmascript');
+  api.addFiles('corbel-query-translator.js', ['server']);
   api.addFiles('corbel-handler.js', ['server']);
   api.mainModule('aerial-corbel.js', ['server']);
 
