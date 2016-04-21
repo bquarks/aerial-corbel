@@ -47,7 +47,8 @@ var CorbelHandler = function (conf) {
       let future = new Future,
           query = QueryTranslator.query(getParams.selector);
 
-      console.log(query);
+      _.extend(query, QueryTranslator.options(getParams.options));
+
       getDriver(token).domain('booqs').resources
         .collection(collection).get(query)
         .then((res) => {
@@ -56,6 +57,7 @@ var CorbelHandler = function (conf) {
           }
         })
         .catch((e) => {
+          console.error(e);
           throw e;
         });
 
@@ -81,6 +83,45 @@ var CorbelHandler = function (conf) {
 
   this.update = function (token, collection, data, condition) {
 
+  };
+
+  this.count = function (token, collection, getParams) {
+    if (token && collection && getParams) {
+
+      let future = new Future,
+          query = QueryTranslator.query(getParams.selector);
+
+      _.extend(query, QueryTranslator.options(getParams.options));
+
+      _.extend(query, QueryTranslator.count(getParams.options));
+
+      getDriver(token).domain('booqs').resources
+        .collection(collection).get(query)
+        .then((res) => {
+          console.log(res);
+          if (res && res.data) {
+            future.return(res.data.count);
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          throw e;
+        });
+
+      return future.wait();
+    } else {
+      if (!token) {
+        throw new TypeError('The first parameter must be a valid token object');
+      }
+
+      if (!collection) {
+        throw new TypeError('The second parameter must be a collection name');
+      }
+
+      if (!getParams) {
+        throw new TypeError('The third parameter must be a valid get params object');
+      }
+    }
   };
 };
 

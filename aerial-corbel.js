@@ -6,6 +6,7 @@ let CH = null,
     adminToken = null;
 
 AerialRestDriver = function (conf) {
+
   CH = CorbelSingleton(conf);
 
   var wCB = Meteor.wrapAsync(function (coll, f) {
@@ -39,7 +40,7 @@ AerialRestDriver = function (conf) {
 
   this.get = (coll, selector, options) => {
 
-    if (coll.name === 'users') {
+    if (coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
       return;
     }
 
@@ -60,5 +61,13 @@ AerialRestDriver = function (conf) {
 
     // TODO: transform here the selector for the composr query.
 
+  };
+
+  this.count = (coll, selector, options) => {
+    if (coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
+      return;
+    }
+
+    return CH.count(adminToken, coll.name, { selector, options });
   };
 };

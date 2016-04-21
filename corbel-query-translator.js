@@ -60,10 +60,31 @@ QueryTranslator = {
     let query = null;
     if (typeof selector === 'string') {
       return { query: isEq('id', selector) };
-    } else if (typeof selector === 'object') {
+    } else if (typeof selector === 'object' && Object.keys(selector).length !== 0) {
       return queryWalker(selector);
     } else {
       return {};
     }
+  },
+
+  options: function (opt) {
+    if (opt.skip || opt.limit) {
+      opt.skip = opt.skip || 0;
+
+      let skip = parseInt(opt.limit / opt.skip) - 1;
+
+      skip = skip === -1 ? 0 : skip;
+
+      return { pagination: { page:skip, pageSize: opt.limit } };
+    }
+  },
+
+  count: function (opt) {
+    if (opt.field) {
+      // TODO: count only the fields that have a 1 or true in the field object
+      // with {$count: 'description'} corbel only count the docs that have this field.
+    }
+
+    return { aggregation: { $count: '*' } };
   },
 };
