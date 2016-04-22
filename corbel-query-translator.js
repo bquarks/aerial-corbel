@@ -1,4 +1,7 @@
-var operators = ['$eq', '$gt', '$gte', '$lt', '$lte', '$ne', '$in', '$nin'];
+var operators = ['$eq', '$gt', '$gte', '$lt', '$lte', '$ne', '$in', '$nin', '$regex'],
+    opTranslations = {
+      $regex: '$like'
+    };
 
 function isEq(field, value) {
   if (typeof value !== 'object') {
@@ -14,7 +17,7 @@ function isEq(field, value) {
 
 function isOp(field) {
   for (var i = 0; i < operators.length; i++) {
-    if (operators[i] === val) {
+    if (operators[i] === field) {
       return true;
     }
   }
@@ -22,32 +25,52 @@ function isOp(field) {
   return false;
 }
 
+function getOperator(op) {
+  let valid = opTranslations[op];
+  if (valid) {
+    return valid;
+  }
+
+  return op;
+}
+
 function translateOperator(op, field, value) {
-  let q = [],
-      qObj = {};
+  let qObj = {};
+
+  op = getOperator(op);
 
   qObj[op] = {};
 
   // TODO: translate the operator in a specific form, some of them could need arrays or other objects
   qObj[op][field] = value;
-  q.push(qObj);
 
-  return q;
+  return qObj;
 }
 
-function queryWalker(selectors) {
+function queryWalker(selectors, field) {
   let query = [];
   for (var propName in selectors) {
     if (selectors.hasOwnProperty(propName)) {
       let val = selectors[propName];
-      if (typeof val !== 'object') {
+      if (typeof val !== 'object' && !field) {
         let q = isEq(propName, val);
 
         if (q) {
           query.push(q);
         }
-      } else {
+      } else if (field){
         // NOTE: search operators
+        if (isOp(propName)) {
+          let q = translateOperator(propName, field, val);
+          return q;
+        }
+      }
+      else {
+        let q = queryWalker(val, propName);
+
+        if (q) {
+          query.push(q);
+        }
       }
     }
   }
@@ -69,11 +92,12 @@ QueryTranslator = {
 
   options: function (opt) {
     if (opt.skip || opt.limit) {
+
       opt.skip = opt.skip || 0;
 
-      let skip = parseInt(opt.limit / opt.skip) - 1;
+      let skip = parseInt(opt.skip / opt.limit);
 
-      skip = skip === -1 ? 0 : skip;
+      skip = skip === NaN ? 0 : skip;
 
       return { pagination: { page:skip, pageSize: opt.limit } };
     }

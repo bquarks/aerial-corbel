@@ -98,7 +98,6 @@ var CorbelHandler = function (conf) {
       getDriver(token).domain('booqs').resources
         .collection(collection).get(query)
         .then((res) => {
-          console.log(res);
           if (res && res.data) {
             future.return(res.data.count);
           }

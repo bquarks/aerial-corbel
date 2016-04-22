@@ -3,10 +3,10 @@ Package.describe({
   version: '0.0.1',
 
   // Brief, one-line summary of the package.
-  summary: '',
+  summary: 'Low level corbel api handler and tranlator',
 
   // URL to the Git repository containing the source code for this package.
-  git: '',
+  git: 'https://github.com/bquarks/aerial-corbel.git',
 
   // By default, Meteor will default to using README.md for documentation.
   // To avoid submitting documentation, set this field to null.
@@ -26,8 +26,8 @@ Package.onUse(function (api) {
 Package.onTest(function (api) {
   api.use('ecmascript');
   api.use('tinytest');
-  api.use('aerial-corbel');
-  api.mainModule('aerial-corbel-tests.js');
+  // api.use('aerial-corbel');
+  // api.mainModule('aerial-corbel-tests.js');
 });
 
 Npm.depends({
