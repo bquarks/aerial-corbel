@@ -1,4 +1,5 @@
-var operators = ['$eq', '$gt', '$gte', '$lt', '$lte', '$ne', '$in', '$nin', '$regex'],
+const operators = ['$eq', '$gt', '$gte', '$lt', '$lte', '$ne', '$in', '$nin', '$regex'],
+    _sort = {'-1': 'desc', '1': 'asc'},
     opTranslations = {
       $regex: '$like'
     };
@@ -23,6 +24,17 @@ function isOp(field) {
   }
 
   return false;
+}
+
+function transformSort(sort) {
+  for (var field in sort) {
+    if (sort.hasOwnProperty(field)) {
+      let val = sort[field];
+      sort[field] = typeof val === 'number' || val === '1' || val === '-1' ? _sort[val] : val;
+    }
+  }
+
+  return sort;
 }
 
 function getOperator(op) {
@@ -91,16 +103,25 @@ QueryTranslator = {
   },
 
   options: function (opt) {
+    let skip = null,
+        options = {};
+
     if (opt.skip || opt.limit) {
 
       opt.skip = opt.skip || 0;
 
-      let skip = parseInt(opt.skip / opt.limit);
+      skip = parseInt(opt.skip / opt.limit);
 
       skip = skip === NaN ? 0 : skip;
 
-      return { pagination: { page:skip, pageSize: opt.limit } };
+      options = { pagination: { page:skip, pageSize: opt.limit } };
     }
+
+    if (opt.sort) {
+      options.sort = transformSort(opt.sort);
+    }
+
+    return options
   },
 
   count: function (opt) {
@@ -113,7 +134,6 @@ QueryTranslator = {
   },
 
   relation: function (collName, opt) {
-    console.log(opt);
     if (collName.indexOf('.') !== -1 && opt.relation) {
       let names = collName.split('.');
       return {
