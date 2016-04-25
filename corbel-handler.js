@@ -19,6 +19,16 @@ function makeLogin(driver, claims, cb) {
   });
 }
 
+function request (token, relation, query) {
+  // TODO: avoid repeat the first methods
+  if (relation.method === 'relation') {
+    return getDriver(token).domain('booqs').resources[relation.method](relation.from, relation.field, relation.to).get(null, query);
+  }
+  else {
+    return getDriver(token).domain('booqs').resources[relation.method](relation.name).get(query);
+  }
+}
+
 var CorbelHandler = function (conf) {
   let clientDiver = null,
       clientToken = null;
@@ -45,12 +55,12 @@ var CorbelHandler = function (conf) {
     if (token && collection && getParams) {
 
       let future = new Future,
-          query = QueryTranslator.query(getParams.selector);
+          query = QueryTranslator.query(getParams.selector),
+          relation = QueryTranslator.relation(collection, getParams.options);
 
       _.extend(query, QueryTranslator.options(getParams.options));
 
-      getDriver(token).domain('booqs').resources
-        .collection(collection).get(query)
+      request(token, relation, query)
         .then((res) => {
           if (res && res.data) {
             future.return(res.data);

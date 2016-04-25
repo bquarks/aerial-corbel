@@ -111,4 +111,23 @@ QueryTranslator = {
 
     return { aggregation: { $count: '*' } };
   },
+
+  relation: function (collName, opt) {
+    console.log(opt);
+    if (collName.indexOf('.') !== -1 && opt.relation) {
+      let names = collName.split('.');
+      return {
+        method: 'relation',
+        from: names[0],
+        to: names[1],
+        field: opt.relation
+      };
+    }
+    else {
+      return {
+        method: 'collection',
+        name: collName
+      }
+    }
+  }
 };
