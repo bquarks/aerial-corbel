@@ -118,7 +118,10 @@ QueryTranslator = {
     }
 
     if (opt.sort) {
-      options.sort = transformSort(opt.sort);
+      let newSort = transformSort(opt.sort);
+      if (Object.keys(newSort).length !== 0) {
+        options.sort = newSort;
+      }
     }
 
     return options
