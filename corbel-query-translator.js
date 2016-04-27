@@ -59,6 +59,10 @@ function translateOperator(op, field, value) {
   return qObj;
 }
 
+function translateDistinct (distinct) {
+  return {distinct: distinct};
+}
+
 function queryWalker(selectors, field) {
   let query = [];
   for (var propName in selectors) {
@@ -152,5 +156,9 @@ QueryTranslator = {
         name: collName
       }
     }
+  },
+
+  distinct: function (distinct) {
+    return translateDistinct(distinct);
   }
 };

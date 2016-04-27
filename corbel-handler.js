@@ -56,9 +56,10 @@ var CorbelHandler = function (conf) {
 
       let future = new Future,
           query = QueryTranslator.query(getParams.selector),
-          relation = QueryTranslator.relation(collection, getParams.options);
+          relation = QueryTranslator.relation(collection, getParams.options),
+          distinct = QueryTranslator.distinct(getParams.distinct);
 
-      _.extend(query, QueryTranslator.options(getParams.options));
+      _.extend(query, QueryTranslator.options(getParams.options), distinct);
 
       request(token, relation, query)
         .then((res) => {
@@ -93,6 +94,23 @@ var CorbelHandler = function (conf) {
 
   this.update = function (token, collection, data, condition) {
 
+  };
+
+  this.remove = function (token, collection, query) {
+
+  };
+
+  this.distinct = function (token, collection, getParams, distinct) {
+    getParams.distinct = distinct;
+
+    let docs = this.get(token, collection, getParams),
+        values = [];
+
+    for (var i = 0; i < docs.length; i++) {
+      values.push(docs[i][distinct]);
+    }
+
+    return values;
   };
 
   this.count = function (token, collection, getParams) {
