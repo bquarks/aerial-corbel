@@ -71,7 +71,7 @@ AerialRestDriver = function (conf) {
     return CH.count(adminToken, coll.name, { selector, options });
   };
 
-  this.distinct = (coll, selector, options, distinct) => {
+  this.distinct = (coll, selector, options, dist) => {
     if (coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
       return;
     }
