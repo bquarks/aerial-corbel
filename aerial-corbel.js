@@ -10,34 +10,14 @@ let CH = null,
 AerialRestDriver = function (conf) {
   let future = new Future;
 
-  CH = CorbelSingleton(conf);
-
-  // var wCB = Meteor.wrapAsync(function (coll, f) {
-  //   if (!f)
-  //     return function () {};
-  //
-  //   return function (/*args*/) {
-  //     var context = this,
-  //         args = arguments;
-  //
-  //     if (coll.paused)
-  //       return;
-  //
-  //     coll._observeQueue.queueTask(function () {
-  //       f.apply(context, args);
-  //     });
-  //   };
-  // });
-
-  // NOTE: this is only for development purporse without accounts
-  //
   this.get = (coll, selector, options) => {
+    let corbelHandler = this._getCorbelHandler();
 
     if (coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
       return;
     }
 
-    _.each(CH.get(adminToken, coll.name, { selector, options }), (doc) => {
+    _.each(corbelHandler.get(coll.name, { selector, options }), (doc) => {
       doc._id = doc.id;
 
       if (!coll.findOne(doc.id, {cpsr:true})) {
@@ -56,35 +36,39 @@ AerialRestDriver = function (conf) {
   };
 
   this.count = (coll, selector, options) => {
+    let corbelHandler = this._getCorbelHandler();
+
     if (coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
       return;
     }
 
-    return CH.count(adminToken, coll.name, { selector, options });
+    return corbelHandler.count(coll.name, { selector, options });
   };
 
   this.distinct = (coll, selector, options, dist) => {
+    let corbelHandler = this._getCorbelHandler();
+
     if (coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
       return;
     }
 
-    return CH.distinct(adminToken, coll.name, {selector, options}, dist);
+    return corbelHandler.distinct(coll.name, {selector, options}, dist);
   };
-
-  if (!adminToken) {
-
-    CH.loginUserWithPassword({
-      name: 'adminbooks@bq.com',
-      password: 'admin',
-    },
-    (res) => {
-      adminToken = res.data;
-      this.configured = true;
-
-      future.return();
-    });
-  }
 
   return future.wait();
 
-}
+};
+
+AerialRestDriver.prototype.getCorbelHandler = function () {
+  let userId = Meteor.userId();
+
+  if (!userId) {
+    return;
+  }
+
+  let corbelDriver = Accounts.getCorbelDriver(userId);
+
+  if (corbelDriver) {
+    return createCorbelHandler(corbelDriver);
+  }
+};

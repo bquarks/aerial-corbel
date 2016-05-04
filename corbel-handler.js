@@ -5,53 +5,22 @@ var Corbel = Npm.require('corbel-js'),
     clientConfig = null,
     CHInstance = null;
 
-function getDriver(token) {
-  return Corbel.getDriver({
-    iamToken: token,
-    domain: clientConfig.domain,
-    urlBase: clientConfig.urlBase,
-  });
-}
-
-function makeLogin(driver, claims, cb) {
-  driver.iam.token().create(claims).then((res) => {
-    cb(res);
-  });
-}
-
-function request (token, relation, query) {
-  // TODO: avoid repeat the first methods
-  if (relation.method === 'relation') {
-    return getDriver(token).domain('booqs').resources[relation.method](relation.from, relation.field, relation.to).get(null, query);
+class CorbelHandler {
+  constructor (corbelDriver) {
+    this.corbelDriver = corbelDriver;
   }
-  else {
-    return getDriver(token).domain('booqs').resources[relation.method](relation.name).get(query);
+
+  request (relation, query) {
+    // TODO: avoid repeat the first methods
+    if (relation.method === 'relation') {
+      return this.corbelDriver.domain('booqs').resources[relation.method](relation.from, relation.field, relation.to).get(null, query);
+    }
+    else {
+      return this.corbelDriver.domain('booqs').resources[relation.method](relation.name).get(query);
+    }
   }
-}
 
-var CorbelHandler = function (conf) {
-  let clientDiver = null,
-      clientToken = null;
-
-  clientConfig = conf;
-
-  clientDriver = Corbel.getDriver(conf);
-
-  makeLogin(clientDriver, undefined, (res) => {
-    clientToken = res;
-  });
-
-  this.loginUserWithPassword = function (user, cb) {
-    makeLogin(clientDriver, {
-      claims: {
-        'basic_auth.username': user.name,
-        'basic_auth.password': user.password,
-        scope: 'booqs:admin',
-      },
-    }, cb);
-  };
-
-  this.get = function (token, collection, getParams) {
+  get (collection, getParams) {
     if (token && collection && getParams) {
 
       let future = new Future,
@@ -61,23 +30,19 @@ var CorbelHandler = function (conf) {
 
       _.extend(query, QueryTranslator.options(getParams.options), distinct);
 
-      request(token, relation, query)
-        .then((res) => {
-          if (res && res.data) {
-            future.return(res.data);
-          }
-        })
-        .catch((e) => {
-          console.error(e);
-          throw e;
-        });
+      this.request(relation, query)
+      .then((res) => {
+        if (res && res.data) {
+          future.return(res.data);
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+        throw e;
+      });
 
       return future.wait();
     } else {
-      if (!token) {
-        throw new TypeError('The first parameter must be a valid token object');
-      }
-
       if (!collection) {
         throw new TypeError('The second parameter must be a collection name');
       }
@@ -86,24 +51,24 @@ var CorbelHandler = function (conf) {
         throw new TypeError('The third parameter must be a valid get params object');
       }
     }
-  };
+  }
 
-  this.insert = function (token, collection, doc) {
+  insert (collection, doc) {
     // TODO: this couldn't be necesary
-  };
+  }
 
-  this.update = function (token, collection, data, condition) {
+  update (collection, data, condition) {
+    // TODO
+  }
 
-  };
+  remove (collection, data, query) {
+    // TODO
+  }
 
-  this.remove = function (token, collection, query) {
-
-  };
-
-  this.distinct = function (token, collection, getParams, distinct) {
+  distinct (collection, getParams, distinct) {
     getParams.distinct = distinct;
 
-    let docs = this.get(token, collection, getParams),
+    let docs = this.get(collection, getParams),
         values = [];
 
     for (var i = 0; i < docs.length; i++) {
@@ -111,10 +76,10 @@ var CorbelHandler = function (conf) {
     }
 
     return values;
-  };
+  }
 
-  this.count = function (token, collection, getParams) {
-    if (token && collection && getParams) {
+  count (collection, getParams) {
+    if (collection && getParams) {
 
       let future = new Future,
           query = QueryTranslator.query(getParams.selector);
@@ -123,23 +88,20 @@ var CorbelHandler = function (conf) {
 
       _.extend(query, QueryTranslator.count(getParams.options));
 
-      getDriver(token).domain('booqs').resources
-        .collection(collection).get(query)
-        .then((res) => {
-          if (res && res.data) {
-            future.return(res.data.count);
-          }
-        })
-        .catch((e) => {
-          console.error(e);
-          throw e;
-        });
+      this.corbelDriver.domain('booqs').resources
+      .collection(collection).get(query)
+      .then((res) => {
+        if (res && res.data) {
+          future.return(res.data.count);
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+        throw e;
+      });
 
       return future.wait();
     } else {
-      if (!token) {
-        throw new TypeError('The first parameter must be a valid token object');
-      }
 
       if (!collection) {
         throw new TypeError('The second parameter must be a collection name');
@@ -149,7 +111,7 @@ var CorbelHandler = function (conf) {
         throw new TypeError('The third parameter must be a valid get params object');
       }
     }
-  };
+  }
 };
 
 CorbelSingleton = function (conf) {
@@ -158,4 +120,8 @@ CorbelSingleton = function (conf) {
   }
 
   return CHInstance;
+};
+
+CorbelHandler = function (corbelDriver) {
+  return new CorbelHandler(corbelDriver);
 };
