@@ -5,23 +5,20 @@ var Corbel = Npm.require('corbel-js'),
     clientConfig = null,
     CHInstance = null;
 
-class CorbelHandler {
-  constructor (corbelDriver) {
-    this.corbelDriver = corbelDriver;
-  }
+CorbelHandler = {
 
-  request (relation, query) {
+  request (corbelDriver, relation, query) {
     // TODO: avoid repeat the first methods
     if (relation.method === 'relation') {
-      return this.corbelDriver.domain('booqs').resources[relation.method](relation.from, relation.field, relation.to).get(null, query);
+      return corbelDriver.domain('booqs').resources[relation.method](relation.from, relation.field, relation.to).get(null, query);
     }
     else {
-      return this.corbelDriver.domain('booqs').resources[relation.method](relation.name).get(query);
+      return corbelDriver.domain('booqs').resources[relation.method](relation.name).get(query);
     }
-  }
+  },
 
-  get (collection, getParams) {
-    if (token && collection && getParams) {
+  get (corbelDriver, collection, getParams) {
+    if (collection && getParams) {
 
       let future = new Future,
           query = QueryTranslator.query(getParams.selector),
@@ -30,7 +27,7 @@ class CorbelHandler {
 
       _.extend(query, QueryTranslator.options(getParams.options), distinct);
 
-      this.request(relation, query)
+      request(corbelDriver, relation, query)
       .then((res) => {
         if (res && res.data) {
           future.return(res.data);
@@ -42,7 +39,8 @@ class CorbelHandler {
       });
 
       return future.wait();
-    } else {
+    }
+    else {
       if (!collection) {
         throw new TypeError('The second parameter must be a collection name');
       }
@@ -51,21 +49,21 @@ class CorbelHandler {
         throw new TypeError('The third parameter must be a valid get params object');
       }
     }
-  }
+  },
 
-  insert (collection, doc) {
+  insert (corbelDriver, collection, doc) {
     // TODO: this couldn't be necesary
-  }
+  },
 
-  update (collection, data, condition) {
+  update (corbelDriver, collection, data, condition) {
     // TODO
-  }
+  },
 
-  remove (collection, data, query) {
+  remove (corbelDriver, collection, data, query) {
     // TODO
-  }
+  },
 
-  distinct (collection, getParams, distinct) {
+  distinct (corbelDriver, collection, getParams, distinct) {
     getParams.distinct = distinct;
 
     let docs = this.get(collection, getParams),
@@ -76,9 +74,9 @@ class CorbelHandler {
     }
 
     return values;
-  }
+  },
 
-  count (collection, getParams) {
+  count (corbelDriver, collection, getParams) {
     if (collection && getParams) {
 
       let future = new Future,
@@ -88,7 +86,7 @@ class CorbelHandler {
 
       _.extend(query, QueryTranslator.count(getParams.options));
 
-      this.corbelDriver.domain('booqs').resources
+      corbelDriver.domain('booqs').resources
       .collection(collection).get(query)
       .then((res) => {
         if (res && res.data) {
@@ -96,7 +94,7 @@ class CorbelHandler {
         }
       })
       .catch((e) => {
-        console.error(e);
+        // console.error(e);
         throw e;
       });
 
@@ -112,16 +110,4 @@ class CorbelHandler {
       }
     }
   }
-};
-
-CorbelSingleton = function (conf) {
-  if (!CHInstance) {
-    CHInstance = new CorbelHandler(conf);
-  }
-
-  return CHInstance;
-};
-
-CorbelHandler = function (corbelDriver) {
-  return new CorbelHandler(corbelDriver);
 };

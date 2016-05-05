@@ -8,16 +8,15 @@ let CH = null,
     Future = Npm.require(path.join('fibers', 'future'));
 
 AerialRestDriver = function (conf) {
-  let future = new Future;
 
   this.get = (coll, selector, options) => {
-    let corbelHandler = this._getCorbelHandler();
+    let corbelDriver = this._getCorbelDriver();
 
-    if (coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
+    if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
       return;
     }
 
-    _.each(corbelHandler.get(coll.name, { selector, options }), (doc) => {
+    _.each(CorbelHandler.get(corbelDriver, coll.name, { selector, options }), (doc) => {
       doc._id = doc.id;
 
       if (!coll.findOne(doc.id, {cpsr:true})) {
@@ -36,39 +35,41 @@ AerialRestDriver = function (conf) {
   };
 
   this.count = (coll, selector, options) => {
-    let corbelHandler = this._getCorbelHandler();
+    let corbelDriver = this._getCorbelDriver();
 
-    if (coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
+    if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
       return;
     }
 
-    return corbelHandler.count(coll.name, { selector, options });
+    return CorbelHandler.count(corbelDriver, coll.name, { selector, options });
   };
 
   this.distinct = (coll, selector, options, dist) => {
-    let corbelHandler = this._getCorbelHandler();
+    let corbelDriver = this._getCorbelDriver();
 
-    if (coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
+    if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
       return;
     }
 
-    return corbelHandler.distinct(coll.name, {selector, options}, dist);
+    return CorbelHandler.distinct(corbelDriver, coll.name, {selector, options}, dist);
   };
 
-  return future.wait();
+  this._getCorbelDriver = () => {
+    let userId = Meteor.userId();
 
-};
+    if (!userId) {
+      return;
+    }
 
-AerialRestDriver.prototype.getCorbelHandler = function () {
-  let userId = Meteor.userId();
+    let corbelDriver = Accounts.getCorbelDriver(userId);
 
-  if (!userId) {
-    return;
-  }
+    if (!corbelDriver) {
+      console.log('No corbelDriver');
+      throw new Meteor.Error(403, 'Authentication error');
+    }
 
-  let corbelDriver = Accounts.getCorbelDriver(userId);
+    return corbelDriver;
+  };
 
-  if (corbelDriver) {
-    return createCorbelHandler(corbelDriver);
-  }
+
 };
