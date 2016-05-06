@@ -27,7 +27,8 @@ CorbelHandler = {
 
       _.extend(query, QueryTranslator.options(getParams.options), distinct);
 
-      request(corbelDriver, relation, query)
+      CorbelHandler
+      .request(corbelDriver, relation, query)
       .then((res) => {
         if (res && res.data) {
           future.return(res.data);
