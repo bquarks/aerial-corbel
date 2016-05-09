@@ -66,7 +66,7 @@ CorbelHandler = {
   distinct (corbelDriver, collection, getParams, distinct) {
     getParams.distinct = distinct;
 
-    let docs = this.get(collection, getParams),
+    let docs = this.get(corbelDriver, collection, getParams),
         values = [];
 
     for (var i = 0; i < docs.length; i++) {
