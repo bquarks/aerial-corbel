@@ -1,6 +1,5 @@
 var Corbel = Npm.require('corbel-js'),
     path = Npm.require('path'),
-    Fiber = Npm.require('fibers'),
     Future = Npm.require(path.join('fibers', 'future')),
     clientConfig = null,
     CHInstance = null;
@@ -95,7 +94,6 @@ CorbelHandler = {
         }
       })
       .catch((e) => {
-        // console.error(e);
         throw e;
       });
 

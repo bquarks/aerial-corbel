@@ -5,9 +5,10 @@
 let CH = null,
     adminToken = null,
     path = Npm.require('path'),
-    Future = Npm.require(path.join('fibers', 'future'));
+    Future = Npm.require(path.join('fibers', 'future')),
+    Fiber = Npm.require('fibers');
 
-AerialRestDriver = function (conf) {
+AerialRestDriver = function () {
 
   this.get = (coll, selector, options) => {
     let corbelDriver = this._getCorbelDriver();
@@ -31,7 +32,6 @@ AerialRestDriver = function (conf) {
     });
 
     // TODO: transform here the selector for the composr query.
-
   };
 
   this.count = (coll, selector, options) => {
@@ -55,7 +55,11 @@ AerialRestDriver = function (conf) {
   };
 
   this._getCorbelDriver = () => {
-    let userId = Meteor.userId();
+    let userId;
+
+    Tracker.nonreactive(function () {
+      userId = Meteor.userId();
+    });
 
     if (!userId) {
       return;
@@ -71,5 +75,6 @@ AerialRestDriver = function (conf) {
     return corbelDriver;
   };
 
+  this.configured = true;
 
 };
