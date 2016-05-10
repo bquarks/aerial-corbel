@@ -18,6 +18,7 @@ AerialRestDriver = function () {
     }
 
     _.each(CorbelHandler.get(corbelDriver, coll.name, { selector, options }), (doc) => {
+
       doc._id = doc.id;
 
       if (!coll.findOne(doc.id, {cpsr:true})) {
@@ -71,6 +72,19 @@ AerialRestDriver = function () {
       console.log('No corbelDriver');
       throw new Meteor.Error(403, 'Authentication error');
     }
+
+    let refreshTokenCallback = function (newTokenData) {
+      Accounts.refreshToken(userId, newTokenData);
+    };
+
+    let onRequestCallback = function (request) {
+      corbelDriver.off('token:refresh', refreshTokenCallback);
+      corbelDriver.off('service:request:after', onRequestCallback);
+    };
+
+    corbelDriver.on('token:refresh', refreshTokenCallback);
+
+    corbelDriver.on('service:request:after', onRequestCallback);
 
     return corbelDriver;
   };
