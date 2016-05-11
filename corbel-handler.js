@@ -34,8 +34,9 @@ CorbelHandler = {
         }
       })
       .catch((e) => {
+        console.log('CORBEL COLLECTION GET ERROR');
         console.error(e);
-        throw e;
+        future.throw(e);
       });
 
       return future.wait();
@@ -80,21 +81,22 @@ CorbelHandler = {
     if (collection && getParams) {
 
       let future = new Future,
+          relation = QueryTranslator.relation(collection, getParams.options),
           query = QueryTranslator.query(getParams.selector);
 
       _.extend(query, QueryTranslator.options(getParams.options));
 
       _.extend(query, QueryTranslator.count(getParams.options));
 
-      corbelDriver.domain('booqs').resources
-      .collection(collection).get(query)
+      CorbelHandler
+      .request(corbelDriver, relation, query)
       .then((res) => {
         if (res && res.data) {
           future.return(res.data.count);
         }
       })
       .catch((e) => {
-        throw e;
+        future.throw(e);
       });
 
       return future.wait();
