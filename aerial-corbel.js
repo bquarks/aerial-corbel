@@ -1,3 +1,6 @@
+/* jshint esversion: 6 */
+
+
 // Write your package code here!
 
 // Variables exported by this module can be imported by other packages and
@@ -53,6 +56,17 @@ AerialRestDriver = function () {
     }
 
     return CorbelHandler.distinct(corbelDriver, coll.name, {selector, options}, dist);
+  };
+
+  this.update = (coll, selector, mod, options) => {
+
+    let corbelDriver = this._getCorbelDriver();
+
+    if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
+      return;
+    }
+
+    return CorbelHandler.update(corbelDriver, coll.name, {selector, mod, options});
   };
 
   this._getCorbelDriver = () => {
