@@ -10,10 +10,10 @@ CorbelHandler = {
   request (corbelDriver, relation, query) {
     // TODO: avoid repeat the first methods
     if (relation.method === 'relation') {
-      return corbelDriver.domain('booqs').resources[relation.method](relation.from, relation.field, relation.to).get(null, query);
+      return corbelDriver.domain(corbelDriver.config.domain).resources[relation.method](relation.from, relation.field, relation.to).get(null, query);
     }
     else {
-      return corbelDriver.domain('booqs').resources[relation.method](relation.name).get(query);
+      return corbelDriver.domain(corbelDriver.config.domain).resources[relation.method](relation.name).get(query);
     }
   },
 
@@ -36,7 +36,6 @@ CorbelHandler = {
       })
       .catch((e) => {
         console.log('CORBEL COLLECTION GET ERROR');
-        console.error(e);
         future.throw(e);
       });
 
@@ -79,8 +78,7 @@ CorbelHandler = {
       .catch((e) => {
 
         console.log('update Failed');
-        console.error(e);
-        throw e;
+        future.throw(e);
       });
 
       return future.wait();
