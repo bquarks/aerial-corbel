@@ -20,10 +20,17 @@ AerialRestDriver = function () {
       return;
     }
 
-    _.each(CorbelHandler.get(corbelDriver, coll.name, { selector, options }), (doc) => {
+    let allDocs = coll.find({}, {cpsr: true}).fetch(),
+        corbelDocs = CorbelHandler.get(corbelDriver, coll.name, { selector, options }),
+        toRemove = _.difference(allDocs, corbelDocs);
+
+    _.each(toRemove, doc => {
+      coll.remove(doc._id);
+    });
+
+    _.each(corbelDocs, doc => {
 
       doc._id = doc.id;
-
       if (!coll.findOne(doc.id, {cpsr:true})) {
         coll.insert(doc);
       }
@@ -54,7 +61,6 @@ AerialRestDriver = function () {
     if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
       return;
     }
-
     return CorbelHandler.distinct(corbelDriver, coll.name, {selector, options}, dist);
   };
 
@@ -67,6 +73,16 @@ AerialRestDriver = function () {
     }
 
     return CorbelHandler.update(corbelDriver, coll.name, {selector, mod, options});
+  };
+
+  this.remove = (coll, selector) => {
+    let corbelDriver = this._getCorbelDriver();
+
+    if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
+      return;
+    }
+
+    return CorbelHandler.remove(corbelDriver, coll.id);
   };
 
   this._getCorbelDriver = () => {
