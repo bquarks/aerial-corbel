@@ -13,10 +13,10 @@ CorbelHandler = {
     let curDomain = domain || corbelDriver.config.config.domain;
 
     if (relation.method === 'relation') {
-      return corbelDriver.domain('booqs').resources[relation.method](relation.from, relation.field, relation.to).get(null, query);
+      return corbelDriver.domain(curDomain).resources[relation.method](relation.from, relation.field, relation.to).get(null, query);
     }
     else {
-      return corbelDriver.domain('booqs').resources[relation.method](relation.name).get(query);
+      return corbelDriver.domain(curDomain).resources[relation.method](relation.name).get(query);
     }
   },
 
