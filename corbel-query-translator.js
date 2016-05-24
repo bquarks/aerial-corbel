@@ -1,7 +1,12 @@
 const operators = ['$eq', '$gt', '$gte', '$lt', '$lte', '$ne', '$in', '$nin', '$regex'],
+    conditionals = ['$or'],
     _sort = {'-1': 'desc', '1': 'asc'},
     opTranslations = {
       $regex: '$like'
+    },
+    condTranslations = {
+      $or: 'queries',
+      nothing: 'query'
     };
 
 function isEq(field, value) {
@@ -16,14 +21,22 @@ function isEq(field, value) {
   return false;
 }
 
-function isOp(field) {
-  for (var i = 0; i < operators.length; i++) {
-    if (operators[i] === field) {
+function lookDict(field, dict) {
+  for (var i = 0; i < dict.length; i++) {
+    if (dict[i] === field) {
       return true;
     }
   }
 
   return false;
+}
+
+function isOp(field) {
+  return lookDict(field, operators);
+}
+
+function isConditional(op) {
+  return lookDict(op, conditionals);
 }
 
 function transformSort(sort) {
@@ -59,22 +72,43 @@ function translateOperator(op, field, value) {
   return qObj;
 }
 
+function translateConditional(op) {
+  let cond = condTranslations[op];
+
+  if (cond) {
+    return cond;
+  }
+  else {
+    return condTranslations['nothing'];
+  }
+}
+
 function translateDistinct (distinct) {
   return {distinct: distinct};
 }
 
 function queryWalker(selectors, field) {
-  let query = [];
+  let query = [],
+      name;
   for (var propName in selectors) {
     if (selectors.hasOwnProperty(propName)) {
       let val = selectors[propName];
+
+      name = translateConditional(propName);
+
       if (typeof val !== 'object' && !field) {
         let q = isEq(propName, val);
 
         if (q) {
           query.push(q);
         }
-      } else if (field){
+      }
+      else if (isConditional(propName)) {
+        for (var i = 0; i < val.length; i++) {
+          query.push(queryWalker(val[i]));
+        }
+      }
+      else if (field){
         // NOTE: search operators
         if (isOp(propName)) {
           let q = translateOperator(propName, field, val);
@@ -90,8 +124,9 @@ function queryWalker(selectors, field) {
       }
     }
   }
-
-  return { query: query };
+  let ret = {};
+  ret[name] = query;
+  return ret;
 }
 
 QueryTranslator = {

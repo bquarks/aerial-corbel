@@ -10,14 +10,13 @@ CorbelHandler = {
   getRequest (corbelDriver, relation, query, domain) {
     // TODO: avoid repeat the first methods
 
-
     let curDomain = domain || corbelDriver.config.config.domain;
 
     if (relation.method === 'relation') {
-      return corbelDriver.domain(curDomain).resources[relation.method](relation.from, relation.field, relation.to).get(null, query);
+      return corbelDriver.domain('booqs').resources[relation.method](relation.from, relation.field, relation.to).get(null, query);
     }
     else {
-      return corbelDriver.domain(curDomain).resources[relation.method](relation.name).get(query);
+      return corbelDriver.domain('booqs').resources[relation.method](relation.name).get(query);
     }
   },
 
@@ -133,7 +132,7 @@ CorbelHandler = {
       _.extend(query, QueryTranslator.count(getParams.options));
 
       CorbelHandler
-      .request(corbelDriver, relation, query)
+      .getRequest(corbelDriver, relation, query)
       .then((res) => {
         if (res && res.data) {
           future.return(res.data.count);
