@@ -24,9 +24,6 @@ AerialRestDriver = function () {
         corbelDocs = CorbelHandler.get(corbelDriver, coll.name, { selector, options }),
         toRemove = _.difference(allDocs, corbelDocs);
 
-    _.each(toRemove, doc => {
-      coll.remove(doc._id);
-    });
 
     _.each(corbelDocs, doc => {
 
@@ -42,7 +39,10 @@ AerialRestDriver = function () {
       }
     });
 
-    // TODO: transform here the selector for the composr query.
+    _.each(toRemove, doc => {
+      coll.remove(doc._id);
+    });
+
   };
 
   this.count = (coll, selector, options) => {
