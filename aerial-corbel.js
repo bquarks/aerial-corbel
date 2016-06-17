@@ -13,7 +13,8 @@ let CH = null,
 
 AerialRestDriver = function () {
 
-  this.get = (coll, selector, options) => {
+  this.get = (coll, selector, options={}) => {
+
     let corbelDriver = this._getCorbelDriver();
 
     if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
@@ -104,7 +105,8 @@ AerialRestDriver = function () {
     }
 
     let refreshTokenCallback = function (newTokenData) {
-      Accounts.refreshToken(userId, newTokenData);
+			console.log('refresh token');
+      Accounts.refreshUserToken(userId, newTokenData);
     };
 
     let onRequestCallback = function (request) {

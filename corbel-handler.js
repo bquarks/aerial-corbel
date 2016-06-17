@@ -1,4 +1,5 @@
 /* jshint esversion: 6 */
+
 var Corbel = Npm.require('corbel-js'),
     path = Npm.require('path'),
     Future = Npm.require(path.join('fibers', 'future')),
@@ -26,12 +27,13 @@ CorbelHandler = {
       let future = new Future,
           query = QueryTranslator.query(getParams.selector),
           relation = QueryTranslator.relation(collection, getParams.options),
-          distinct = QueryTranslator.distinct(getParams.distinct);
+          distinct = QueryTranslator.distinct(getParams.distinct),
+					domain = getParams.options.domain;
 
       _.extend(query, QueryTranslator.options(getParams.options), distinct);
 
       CorbelHandler
-      .getRequest(corbelDriver, relation, query)
+      .getRequest(corbelDriver, relation, query, domain)
       .then((res) => {
         if (res && res.data) {
           future.return(res.data);
@@ -125,14 +127,15 @@ CorbelHandler = {
 
       let future = new Future,
           relation = QueryTranslator.relation(collection, getParams.options),
-          query = QueryTranslator.query(getParams.selector);
+          query = QueryTranslator.query(getParams.selector),
+					domain = getParams.options.domain;
 
       _.extend(query, QueryTranslator.options(getParams.options));
 
       _.extend(query, QueryTranslator.count(getParams.options));
 
       CorbelHandler
-      .getRequest(corbelDriver, relation, query)
+      .getRequest(corbelDriver, relation, query, domain)
       .then((res) => {
         if (res && res.data) {
           future.return(res.data.count);
