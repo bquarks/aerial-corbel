@@ -25,6 +25,9 @@ AerialRestDriver = function () {
         corbelDocs = CorbelHandler.get(corbelDriver, coll.name, { selector, options }),
         toRemove = _.difference(allDocs, corbelDocs);
 
+    _.each(toRemove, doc => {
+      coll.remove(doc._id);
+    });
 
     _.each(corbelDocs, doc => {
 
@@ -38,10 +41,6 @@ AerialRestDriver = function () {
 
         coll.update(id, doc);
       }
-    });
-
-    _.each(toRemove, doc => {
-      coll.remove(doc._id);
     });
 
   };
