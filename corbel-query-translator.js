@@ -5,6 +5,8 @@ const operators = ['$eq', '$gt', '$gte', '$lt', '$lte', '$ne', '$in', '$nin', '$
       $regex: '$like',
       $elemMatch: '$elem_match'
     },
+    updateOp = '$set',
+    unsupportedUpdateOp = ['$inc', '$mul', '$rename', '$setOnInsert', '$unset', '$min', '$max', '$currentDate'],
     condTranslations = {
       $or: 'queries',
       nothing: 'query'
@@ -34,6 +36,23 @@ function lookDict(field, dict) {
 
 function isOp(field) {
   return lookDict(field, operators);
+}
+
+function isGenericOp(fieldName) {
+  return fieldName[0] === '$';
+}
+
+function hasGenericOps(dict) {
+  let hasOp = false;
+
+  for (let propName in dict) {
+    hasOp = isGenericOp(propName);
+
+    if (hasOp)
+      return hasOp;
+  }
+
+  return hasOp;
 }
 
 function isConditional(op) {
@@ -137,6 +156,16 @@ function queryWalker(selectors, field) {
   return ret;
 }
 
+function isUnsupportedUpdateOp (modifier) {
+  for (let op in unsupportedUpdateOp) {
+    if (modifier[op]) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 QueryTranslator = {
   query: function (selector) {
     let query = null;
@@ -146,6 +175,18 @@ QueryTranslator = {
       return queryWalker(selector);
     } else {
       return {};
+    }
+  },
+
+  getUpdateModifier: function (modifier) {
+    if (modifier[updateOp]) {
+      return modifier[updateOp];
+    }
+    else if (hasGenericOps(modifier)) {
+      throw Meteor.Error('The modifier is not supported for update methods.');
+    }
+    else {
+      return modifier;
     }
   },
 

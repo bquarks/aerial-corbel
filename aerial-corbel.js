@@ -64,7 +64,7 @@ AerialRestDriver = function () {
     return CorbelHandler.distinct(corbelDriver, coll.name, {selector, options}, dist);
   };
 
-  this.update = (coll, selector, mod, options) => {
+  this.update = (coll, selector={}, modifier, options={}) => {
 
     let corbelDriver = this._getCorbelDriver();
 
@@ -72,7 +72,7 @@ AerialRestDriver = function () {
       return;
     }
 
-    return CorbelHandler.update(corbelDriver, coll.name, {selector, mod, options});
+    return CorbelHandler.update(corbelDriver, coll.name, {selector, modifier, options});
   };
 
   this.remove = (coll, selector) => {

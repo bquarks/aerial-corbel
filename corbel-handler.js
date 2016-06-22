@@ -40,7 +40,6 @@ CorbelHandler = {
         }
       })
       .catch((e) => {
-        console.log('CORBEL COLLECTION GET ERROR');
         future.throw(e);
       });
 
@@ -61,25 +60,22 @@ CorbelHandler = {
     // TODO: this couldn't be necesary
   },
 
-  update (corbelDriver, collectionName, getParams) {
-
-    if (collectionName && getParams) {
+  update (corbelDriver, collectionName, params) {
+    if (collectionName && params) {
       let future = new Future,
-          options = getParams.options,
-          mod = getParams.mod,
-          selector = getParams.selector;
+          options = params.options,
+          domain = options.domain,
+          data = QueryTranslator.getUpdateModifier(params.modifier),
+          query = !params.selector._id && !params.selector.id ? QueryTranslator.query(params.selector) : params.selector._id || params.selector.id;
 
       CorbelHandler
-      .updateRequest(corbelDriver, collectionName, selector._id, mod, options)
+      .updateRequest(corbelDriver, collectionName, query, data, options, domain)
       .then((res) => {
         if (res) {
-          console.log('Updated!');
           future.return(res.data);
         }
       })
       .catch((e) => {
-
-        console.log('update Failed');
         future.throw(e);
       });
 
@@ -88,20 +84,20 @@ CorbelHandler = {
       if (!collectionName) {
         throw new TypeError('The second parameter must be a collection name.');
       }
-      if (!getParams) {
+      if (!params) {
         throw new TypeError('The third parameter must be a valid get params object');
       }
     }
   },
 
-  updateRequest(corbelDriver, colName, id, mod, options) {
-    let curDomain = corbelDriver.config.config.domain;
+  updateRequest(corbelDriver, colName, query, data, options, domain) {
+    let curDomain = domain || corbelDriver.config.config.domain;
 
-    if (options.multi) { //Update all documents in a collection
-      return corbelDriver.domain(curDomain).resources.collection(colName).update(mod, selector);
+    if ( ( _.isObject(query) ) || options.multi) { //Update all documents in a collection
+      return corbelDriver.domain(curDomain).resources.collection(colName).update(data, query);
     }
     else {
-      return corbelDriver.domain(curDomain).resources.resource(colName, id).update(mod);
+      return corbelDriver.domain(curDomain).resources.resource(colName, query).update(data); // The query is a document id
     }
   },
 
