@@ -1,8 +1,9 @@
-const operators = ['$eq', '$gt', '$gte', '$lt', '$lte', '$ne', '$in', '$nin', '$regex'],
+const operators = ['$eq', '$gt', '$gte', '$lt', '$lte', '$ne', '$in', '$nin', '$regex', '$elemMatch'],
     conditionals = ['$or'],
     _sort = {'-1': 'desc', '1': 'asc'},
     opTranslations = {
-      $regex: '$like'
+      $regex: '$like',
+      $elemMatch: '$elem_match'
     },
     condTranslations = {
       $or: 'queries',
@@ -67,7 +68,14 @@ function translateOperator(op, field, value) {
   qObj[op] = {};
 
   // TODO: translate the operator in a specific form, some of them could need arrays or other objects
-  qObj[op][field] = value;
+  if (op === '$elem_match') {
+    qObj[op][field] = [queryWalker(value).query[0]];
+  //   qObj[field] = {};
+  //   qObj[field][op] = queryWalker(value).query[0];
+  }
+  else {
+    qObj[op][field] = value;
+  }
 
   return qObj;
 }
