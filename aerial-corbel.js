@@ -13,113 +13,125 @@ let CH = null,
 
 AerialRestDriver = function () {
 
-  this.get = (coll, selector, options={}) => {
+    this.get = (coll, selector, options={}) => {
 
-    let corbelDriver = this._getCorbelDriver();
+        let corbelDriver = this._getCorbelDriver();
 
-    if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
-      return;
-    }
+        if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== - 1) {
+            return;
+        }
+        let sTime = new Date().getTime();
 
-    let allDocs = coll.find({}, {cpsr: true}).fetch(),
-        corbelDocs = CorbelHandler.get(corbelDriver, coll.name, { selector, options }),
-        toRemove = _.difference(allDocs, corbelDocs);
+        let allDocs = coll.find({}, { cpsr: true }).fetch(),
+            corbelDocs = CorbelHandler.get(corbelDriver, coll.name, { selector, options }),
+            args = {
+                length: 0
+            },
+            allIds = _.pluck(allDocs, 'id'),
+            corbelIds = _.pluck(corbelDocs, 'id');
 
-    _.each(toRemove, doc => {
-      coll.remove(doc._id);
-    });
+        ;
+        for (var i = 0; i <= corbelDocs.length; i++) {
+            args.length++;
+            args[i] = i === 0 ? allIds : corbelIds[i - 1];
+        }
 
-    _.each(corbelDocs, doc => {
+        let toRemove = _.without.apply(_, args);
 
-      doc._id = doc.id;
-      if (!coll.findOne(doc.id, {cpsr:true})) {
-        coll.insert(doc);
-      }
-      else {
-        let id = doc._id;
-        delete doc._id;
 
-        coll.update(id, doc);
-      }
-    });
+        _.each(corbelDocs, doc => {
 
-  };
+            doc._id = doc.id;
+            if (!coll.findOne(doc.id, { cpsr:true })) {
+                coll.insert(doc);
+            }
+            else {
+                let id = doc._id;
+                delete doc._id;
+                coll.update(id, { $set: doc }, { cpsr: true });
+            }
+        });
 
-  this.count = (coll, selector, options) => {
-    let corbelDriver = this._getCorbelDriver();
-
-    if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
-      return;
-    }
-
-    return CorbelHandler.count(corbelDriver, coll.name, { selector, options });
-  };
-
-  this.distinct = (coll, selector, options, dist) => {
-    let corbelDriver = this._getCorbelDriver();
-
-    if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
-      return;
-    }
-    return CorbelHandler.distinct(corbelDriver, coll.name, {selector, options}, dist);
-  };
-
-  this.update = (coll, selector={}, modifier, options={}) => {
-
-    let corbelDriver = this._getCorbelDriver();
-
-    if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
-      return;
-    }
-
-    return CorbelHandler.update(corbelDriver, coll.name, {selector, modifier, options});
-  };
-
-  this.remove = (coll, selector) => {
-    let corbelDriver = this._getCorbelDriver();
-
-    if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== -1) {
-      return;
-    }
-
-    return CorbelHandler.remove(corbelDriver, coll.id);
-  };
-
-  this._getCorbelDriver = () => {
-    let userId;
-
-    Tracker.nonreactive(function () {
-      userId = Meteor.userId();
-    });
-
-    if (!userId) {
-      return;
-    }
-
-    let corbelDriver = Accounts.getCorbelDriver(userId);
-
-    if (!corbelDriver) {
-      console.log('No corbelDriver');
-      throw new Meteor.Error(403, 'Authentication error');
-    }
-
-    let refreshTokenCallback = function (newTokenData) {
-			console.log('refresh token');
-      Accounts.refreshUserToken(userId, newTokenData);
+        _.each(toRemove, doc => {
+            coll.remove(doc);
+        });
     };
 
-    let onRequestCallback = function (request) {
-      corbelDriver.off('token:refresh', refreshTokenCallback);
-      corbelDriver.off('service:request:after', onRequestCallback);
+    this.count = (coll, selector, options) => {
+        let corbelDriver = this._getCorbelDriver();
+
+        if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== - 1) {
+            return;
+        }
+
+        return CorbelHandler.count(corbelDriver, coll.name, { selector, options });
     };
 
-    corbelDriver.on('token:refresh', refreshTokenCallback);
+    this.distinct = (coll, selector, options, dist) => {
+        let corbelDriver = this._getCorbelDriver();
 
-    corbelDriver.on('service:request:after', onRequestCallback);
+        if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== - 1) {
+            return;
+        }
+        return CorbelHandler.distinct(corbelDriver, coll.name, { selector, options }, dist);
+    };
 
-    return corbelDriver;
-  };
+    this.update = (coll, selector={}, modifier, options={}) => {
 
-  this.configured = true;
+        let corbelDriver = this._getCorbelDriver();
+
+        if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== - 1) {
+            return;
+        }
+
+        return CorbelHandler.update(corbelDriver, coll.name, { selector, modifier, options });
+    };
+
+    this.remove = (coll, selector) => {
+        let corbelDriver = this._getCorbelDriver();
+
+        if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== - 1) {
+            return;
+        }
+
+        return CorbelHandler.remove(corbelDriver, coll.id);
+    };
+
+    this._getCorbelDriver = () => {
+        let userId;
+
+        Tracker.nonreactive(function () {
+            userId = Meteor.userId();
+        });
+
+        if (!userId) {
+            return;
+        }
+
+        let corbelDriver = Accounts.getCorbelDriver(userId);
+
+        if (!corbelDriver) {
+            console.log('No corbelDriver');
+            throw new Meteor.Error(403, 'Authentication error');
+        }
+
+        let refreshTokenCallback = function (newTokenData) {
+            console.log('refresh token');
+            Accounts.refreshUserToken(userId, newTokenData);
+        };
+
+        let onRequestCallback = function (request) {
+            corbelDriver.off('token:refresh', refreshTokenCallback);
+            corbelDriver.off('service:request:after', onRequestCallback);
+        };
+
+        corbelDriver.on('token:refresh', refreshTokenCallback);
+
+        corbelDriver.on('service:request:after', onRequestCallback);
+
+        return corbelDriver;
+    };
+
+    this.configured = true;
 
 };
