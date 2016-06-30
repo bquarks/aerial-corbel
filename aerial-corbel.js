@@ -13,47 +13,60 @@ let CH = null,
 
 AerialRestDriver = function () {
 
+    let _cached = {};
+
+    function addCollection(name) {
+        if (_cached[name]) {
+            return;
+        }
+
+        _cached[name] = {};
+    }
+
     this.get = (coll, selector, options={}) => {
 
         let corbelDriver = this._getCorbelDriver();
-
         if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== - 1) {
             return;
         }
-        let sTime = new Date().getTime();
 
-        let allDocs = coll.find({}, { cpsr: true }).fetch(),
-            corbelDocs = CorbelHandler.get(corbelDriver, coll.name, { selector, options }),
-            args = {
-                length: 0
-            },
-            allIds = _.pluck(allDocs, 'id'),
-            corbelIds = _.pluck(corbelDocs, 'id');
+        Meteor.defer(function () {
 
-        ;
-        for (var i = 0; i <= corbelDocs.length; i++) {
-            args.length++;
-            args[i] = i === 0 ? allIds : corbelIds[i - 1];
-        }
+            let sTime = new Date().getTime();
 
-        let toRemove = _.without.apply(_, args);
+            let allDocs = coll.find({}, { cpsr: true }).fetch(),
+                corbelDocs = CorbelHandler.get(corbelDriver, coll.name, { selector, options }),
+                args = {
+                    length: 0
+                },
+                allIds = _.pluck(allDocs, 'id'),
+                corbelIds = _.pluck(corbelDocs, 'id');
 
 
-        _.each(corbelDocs, doc => {
-
-            doc._id = doc.id;
-            if (!coll.findOne(doc.id, { cpsr:true })) {
-                coll.insert(doc);
+            for (var i = 0; i <= corbelDocs.length; i++) {
+                args.length++;
+                args[i] = i === 0 ? allIds : corbelIds[i - 1];
             }
-            else {
-                let id = doc._id;
-                delete doc._id;
-                coll.update(id, { $set: doc }, { cpsr: true });
-            }
-        });
 
-        _.each(toRemove, doc => {
-            coll.remove(doc);
+            let toRemove = _.without.apply(_, args);
+
+
+            _.each(corbelDocs, doc => {
+
+                doc._id = doc.id;
+                if (!coll.findOne(doc.id, { cpsr:true })) {
+                    coll.insert(doc);
+                }
+                else {
+                    let id = doc._id;
+                    delete doc._id;
+                    coll.update(id, { $set: doc }, { cpsr: true });
+                }
+            });
+
+            _.each(toRemove, doc => {
+                coll.remove(doc);
+            });
         });
     };
 
@@ -97,7 +110,7 @@ AerialRestDriver = function () {
         return CorbelHandler.remove(corbelDriver, coll.id);
     };
 
-    this._getCorbelDriver = () => {
+    this._getCorbelDriver = function () {
         let userId;
 
         Tracker.nonreactive(function () {
