@@ -7,93 +7,94 @@ var Corbel = Npm.require('corbel-js'),
     CHInstance = null;
 
 var parseCorbelError = function (e) {
-  let errorMessage = e.data ? e.data.errorDescription : 'No error description provided.',
-      errorCode = e.status || e.statusCode;
+    let errorMessage = e.data ? e.data.errorDescription : 'No error description provided.',
+        errorCode = e.status || e.statusCode;
 
-  return new Meteor.Error(errorCode, errorMessage)
+    return new Meteor.Error(errorCode, errorMessage);
 };
 
 CorbelHandler = {
 
-  getRequest (corbelDriver, relation, query, domain) {
-    // TODO: avoid repeat the first methods
-    let curDomain = domain || corbelDriver.config.config.domain;
+    getRequest(corbelDriver, relation, query, domain) {
+      // TODO: avoid repeat the first methods
+      let curDomain = domain || corbelDriver.config.config.domain;
 
-    if (relation.method === 'relation') {
-      return corbelDriver.domain(curDomain).resources[relation.method](relation.from, relation.field, relation.to).get(null, query);
-    }
-    else {
-      return corbelDriver.domain(curDomain).resources[relation.method](relation.name).get(query);
-    }
-  },
+      if (relation.method === 'relation') {
+        return corbelDriver.domain(curDomain).resources[relation.method](relation.from, relation.field, relation.to).get(null, query);
+      }
+      else {
+        return corbelDriver.domain(curDomain).resources[relation.method](relation.name).get(query);
+      }
+    },
 
-  get (corbelDriver, collection, getParams) {
-    if (collection && getParams) {
-      let future = new Future,
-          query = QueryTranslator.query(getParams.selector),
-          relation = QueryTranslator.relation(collection, getParams.options),
-          distinct = QueryTranslator.distinct(getParams.distinct),
-					domain = getParams.options.domain;
+    get(corbelDriver, collection, getParams) {
+      if (collection && getParams) {
+        let future = new Future,
+            query = QueryTranslator.query(getParams.selector),
+            relation = QueryTranslator.relation(collection, getParams.options),
+            distinct = QueryTranslator.distinct(getParams.distinct),
+       domain = getParams.options.domain;
 
-      _.extend(query, QueryTranslator.options(getParams.options), distinct);
+        _.extend(query, QueryTranslator.options(getParams.options), distinct);
 
-      CorbelHandler
-      .getRequest(corbelDriver, relation, query, domain)
-      .then((res) => {
-        if (res && res.data) {
-          future.return(res.data);
+        CorbelHandler
+        .getRequest(corbelDriver, relation, query, domain)
+        .then((res) => {
+          if (res && res.data) {
+            future.return(res.data);
+          }
+        })
+        .catch((e) => {
+          Meteor.call('elephantInvalidate', getParams.options.MD5);
+          future.throw(parseCorbelError(e));
+        });
+
+        return future.wait();
+      }
+      else {
+        if (!collection) {
+          throw new TypeError('The second parameter must be a collection name');
         }
-      })
-      .catch((e) => {
-        future.throw(parseCorbelError(e));
-      });
 
-      return future.wait();
-    }
-    else {
-      if (!collection) {
-        throw new TypeError('The second parameter must be a collection name');
-      }
-
-      if (!getParams) {
-        throw new TypeError('The third parameter must be a valid get params object');
-      }
-    }
-  },
-
-  insert (corbelDriver, collection, doc) {
-    // TODO: this couldn't be necesary
-  },
-
-  update (corbelDriver, collectionName, params) {
-    if (collectionName && params) {
-      let future = new Future,
-          options = params.options,
-          domain = options.domain,
-          data = QueryTranslator.getUpdateModifier(params.modifier),
-          query = !params.selector._id && !params.selector.id ? QueryTranslator.query(params.selector) : params.selector._id || params.selector.id;
-
-      CorbelHandler
-      .updateRequest(corbelDriver, collectionName, query, data, options, domain)
-      .then((res) => {
-        if (res) {
-          future.return(res.data);
+        if (!getParams) {
+          throw new TypeError('The third parameter must be a valid get params object');
         }
-      })
-      .catch((e) => {
-        future.throw(parseCorbelError(e));
-      });
+      }
+    },
 
-      return future.wait();
-    }else {
-      if (!collectionName) {
-        throw new TypeError('The second parameter must be a collection name.');
+    insert(corbelDriver, collection, doc) {
+      // TODO: this couldn't be necesary
+    },
+
+    update(corbelDriver, collectionName, params) {
+      if (collectionName && params) {
+        let future = new Future,
+            options = params.options,
+            domain = options.domain,
+            data = QueryTranslator.getUpdateModifier(params.modifier),
+            query = !params.selector._id && !params.selector.id ? QueryTranslator.query(params.selector) : params.selector._id || params.selector.id;
+
+        CorbelHandler
+        .updateRequest(corbelDriver, collectionName, query, data, options, domain)
+        .then((res) => {
+          if (res) {
+            future.return(res.data);
+          }
+        })
+        .catch((e) => {
+          future.throw(parseCorbelError(e));
+        });
+
+        return future.wait();
+      }else {
+        if (!collectionName) {
+          throw new TypeError('The second parameter must be a collection name.');
+        }
+        if (!params) {
+          throw new TypeError('The third parameter must be a valid get params object');
+        }
       }
-      if (!params) {
-        throw new TypeError('The third parameter must be a valid get params object');
-      }
-    }
-  },
+    },
   updateRequest(corbelDriver, colName, query, data, options, domain) {
       let curDomain = domain || corbelDriver.config.config.domain;
 
