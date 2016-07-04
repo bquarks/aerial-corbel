@@ -30,43 +30,41 @@ AerialRestDriver = function () {
             return;
         }
 
-        Meteor.defer(function () {
 
-            let sTime = new Date().getTime();
+        let sTime = new Date().getTime();
 
-            let allDocs = coll.find({}, { cpsr: true }).fetch(),
-                corbelDocs = CorbelHandler.get(corbelDriver, coll.name, { selector, options }),
-                args = {
-                    length: 0
-                },
-                allIds = _.pluck(allDocs, 'id'),
-                corbelIds = _.pluck(corbelDocs, 'id');
+        let allDocs = coll.find({}, { cpsr: true }).fetch(),
+            corbelDocs = CorbelHandler.get(corbelDriver, coll.name, { selector, options }),
+            args = {
+                length: 0
+            },
+            allIds = _.pluck(allDocs, 'id'),
+            corbelIds = _.pluck(corbelDocs, 'id');
 
 
-            for (var i = 0; i <= corbelDocs.length; i++) {
-                args.length++;
-                args[i] = i === 0 ? allIds : corbelIds[i - 1];
+        for (var i = 0; i <= corbelDocs.length; i++) {
+            args.length++;
+            args[i] = i === 0 ? allIds : corbelIds[i - 1];
+        }
+
+        let toRemove = _.without.apply(_, args);
+
+
+        _.each(corbelDocs, doc => {
+
+            doc._id = doc.id;
+            if (!coll.findOne(doc.id, { cpsr:true })) {
+                coll.insert(doc);
             }
+            else {
+                let id = doc._id;
+                delete doc._id;
+                coll.update(id, { $set: doc }, { cpsr: true });
+            }
+        });
 
-            let toRemove = _.without.apply(_, args);
-
-
-            _.each(corbelDocs, doc => {
-
-                doc._id = doc.id;
-                if (!coll.findOne(doc.id, { cpsr:true })) {
-                    coll.insert(doc);
-                }
-                else {
-                    let id = doc._id;
-                    delete doc._id;
-                    coll.update(id, { $set: doc }, { cpsr: true });
-                }
-            });
-
-            _.each(toRemove, doc => {
-                coll.remove(doc);
-            });
+        _.each(toRemove, doc => {
+            coll.remove(doc);
         });
     };
 
