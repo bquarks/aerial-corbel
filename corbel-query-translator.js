@@ -124,30 +124,30 @@ function queryWalker(selectors, field) {
             name = translateConditional(propName);
 
             if (typeof val !== 'object' && !field) {
-              let q = isEq(propName, val);
+                let q = isEq(propName, val);
 
-              if (q) {
-                query.push(q);
-              }
+                if (q) {
+                  query.push(q);
+                }
             }
             else if (isConditional(propName)) {
-              for (var i = 0; i < val.length; i++) {
-                query.push(queryWalker(val[i]));
-              }
+                for (var i = 0; i < val.length; i++) {
+                  query.push(queryWalker(val[i]));
+                }
             }
             else if (field){
-              // NOTE: search operators
-              if (isOp(propName)) {
-                let q = translateOperator(propName, field, val);
-                return q;
-              }
+                // NOTE: search operators
+                if (isOp(propName)) {
+                  let q = translateOperator(propName, field, val);
+                  return q;
+                }
             }
             else {
-              let q = queryWalker(val, propName);
+                let q = queryWalker(val, propName);
 
-              if (q) {
-                query.push(q);
-              }
+                if (q) {
+                  query.push(q);
+                }
             }
         }
     }
@@ -159,7 +159,7 @@ function queryWalker(selectors, field) {
 function isUnsupportedUpdateOp (modifier) {
     for (let op in unsupportedUpdateOp) {
         if (modifier[op]) {
-          return true;
+            return true;
         }
     }
 
@@ -170,54 +170,54 @@ QueryTranslator = {
     query: function (selector) {
         let query = null;
         if (typeof selector === 'string') {
-          return { query: isEq('id', selector) };
+            return { query: isEq('id', selector) };
         } else if (typeof selector === 'object' && Object.keys(selector).length !== 0) {
-          return queryWalker(selector);
+            return queryWalker(selector);
         } else {
-          return {};
+            return {};
         }
     },
 
     getUpdateModifier: function (modifier) {
-      if (modifier[updateOp]) {
-        return modifier[updateOp];
-      }
-      else if (hasGenericOps(modifier)) {
-        throw Meteor.Error('The modifier is not supported for update methods.');
-      }
-      else {
-        return modifier;
-      }
+        if (modifier[updateOp]) {
+          return modifier[updateOp];
+        }
+        else if (hasGenericOps(modifier)) {
+          throw Meteor.Error('The modifier is not supported for update methods.');
+        }
+        else {
+          return modifier;
+        }
     },
 
-  options: function (opt) {
-    let skip = null,
-        options = {};
+    options: function (opt) {
+      let skip = null,
+          options = {};
 
-    if (opt.skip || opt.limit) {
+      if (opt.skip || opt.limit) {
 
-      opt.skip = opt.skip || 0;
+        opt.skip = opt.skip || 0;
 
-      skip = parseInt(opt.skip / opt.limit);
+        skip = parseInt(opt.skip / opt.limit);
 
-      skip = isNaN(skip) ? 0 : skip;
+        skip = isNaN(skip) ? 0 : skip;
 
-      options = { pagination: { page:skip, pageSize: opt.limit } };
-    }
-
-    if (opt.sort) {
-      let newSort = transformSort(opt.sort);
-      if (Object.keys(newSort).length !== 0) {
-        options.sort = newSort;
+        options = { pagination: { page:skip, pageSize: opt.limit } };
       }
-    }
 
-    if (opt.search) {
-      options.search = opt.search;
-    }
+      if (opt.sort) {
+        let newSort = transformSort(opt.sort);
+        if (Object.keys(newSort).length !== 0) {
+          options.sort = newSort;
+        }
+      }
 
-    return options;
-  },
+      if (opt.search) {
+        options.search = opt.search;
+      }
+
+      return options;
+    },
 
   count: function (opt) {
     if (opt.field) {
