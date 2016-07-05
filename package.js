@@ -1,6 +1,6 @@
 Package.describe({
     name: 'bquarks:aerial-corbel',
-    version: '0.2.16',
+    version: '0.2.17',
 
     // Brief, one-line summary of the package.
     summary: 'Low level corbel api handler and tranlator',
@@ -31,5 +31,5 @@ Package.onTest(function (api) {
   });
 
 Npm.depends({
-    'corbel-js': '0.4.0',
+    'corbel-js': '0.6.3',
   });
