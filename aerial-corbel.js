@@ -132,7 +132,7 @@ AerialRestDriver = function () {
 
         let refreshTokenCallback = function (newTokenData) {
             console.log('refresh token');
-            Accounts.resetUserToken(userId, newTokenData);
+            Accounts.refreshUserToken(userId, newTokenData);
           };
 
         let onRequestCallback = function (request) {
