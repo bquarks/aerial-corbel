@@ -237,7 +237,8 @@ QueryTranslator = {
           method: 'relation',
           from: names[0],
           to: names[1],
-          field: opt.relation
+          field: opt.relation,
+          id: opt.relationId
         };
       }
       else {

@@ -45,6 +45,9 @@ AerialRestDriver = function () {
             allIds = _.pluck(allDocs, 'id'),
             corbelIds = _.pluck(corbelDocs, 'id');
 
+        if (!_.isArray(corbelDocs)) {
+          corbelDocs = [corbelDocs];
+        }
 
         for (var i = 0; i <= corbelDocs.length; i++) {
           args.length++;
