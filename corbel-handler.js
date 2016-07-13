@@ -13,6 +13,33 @@ var parseCorbelError = function (e) {
     return new Meteor.Error(errorCode, errorMessage);
   };
 
+
+function getUserData(corbelDriver, query, domain, fn) {
+
+  domain = domain || corbelDriver.config.config.domain;
+
+  corbelDriver.domain(domain).iam.users().get(query)
+    .then(res => {
+      if (res.data && res.data.length) {
+        fn(null, res.data);
+        // let ids = _.pluck(res.data, 'id'),
+        //     users = _.pluck(res.data, 'email');
+        // console.log(ids, users);
+        // corbelDriver.assets.asset('all').get({ query: [{ $in: { userId: ids } }] }).then(res => {
+        //   console.log(' RESPONSE!', res);
+        //   future.return(res);
+        // })
+        // .catch(err => {
+        //   console.log(' ERROR!', err);
+        //   future.throw(err);
+        // });
+      }
+    })
+    .catch(err => {
+      fn(err);
+    });
+}
+
 CorbelHandler = {
 
     getRequest( corbelDriver, relation, query, domain ) {
@@ -36,6 +63,19 @@ CorbelHandler = {
        domain = getParams.options.domain;
 
         _.extend(query, QueryTranslator.options(getParams.options), distinct);
+
+        if (collection === 'corbel-users') {
+          getUserData(corbelDriver, query, domain, ( err, res ) => {
+            if (err) {
+              future.throw(err);
+            }
+            else {
+              future.return(res);
+            }
+          });
+
+          return future.wait();
+        }
 
         CorbelHandler
         .getRequest(corbelDriver, relation, query, domain)
