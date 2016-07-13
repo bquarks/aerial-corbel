@@ -3,6 +3,7 @@
 var Corbel = Npm.require('corbel-js'),
     path = Npm.require('path'),
     Future = Npm.require(path.join('fibers', 'future')),
+    userCollections = ['corbelUser', 'assets', 'paymentPlan', 'product', 'paymentMethod'],
     clientConfig = null,
     CHInstance = null;
 
@@ -13,32 +14,57 @@ var parseCorbelError = function (e) {
     return new Meteor.Error(errorCode, errorMessage);
   };
 
+let success = function onSuccess(res) {
+  if (res.data) {
+    this.fn(null, res.data);
+  }
+  else {
+    this.fn('No data');
+  }
+};
 
-function getUserData(corbelDriver, query, domain, fn) {
+let userActions = {
+  get: {
+    corbelUsers: function getUserData(corbelDriver, query, domain, fn) {
+      domain = domain || corbelDriver.config.config.domain;
 
-  domain = domain || corbelDriver.config.config.domain;
+      corbelDriver.domain(domain).iam.users().get(query)
+        .then(success.bind({ fn:fn }))
+        .catch(err => {
+          fn(err);
+        });
+    },
 
-  corbelDriver.domain(domain).iam.users().get(query)
-    .then(res => {
-      if (res.data && res.data.length) {
-        fn(null, res.data);
-        // let ids = _.pluck(res.data, 'id'),
-        //     users = _.pluck(res.data, 'email');
-        // console.log(ids, users);
-        // corbelDriver.assets.asset('all').get({ query: [{ $in: { userId: ids } }] }).then(res => {
-        //   console.log(' RESPONSE!', res);
-        //   future.return(res);
-        // })
-        // .catch(err => {
-        //   console.log(' ERROR!', err);
-        //   future.throw(err);
-        // });
-      }
-    })
-    .catch(err => {
-      fn(err);
-    });
-}
+    assets: function getAssets(corbelDriver, query, domain, fn) {
+      console.log('to get assets');
+      corbelDriver.assets.asset('all').get(query).then(success.bind({ fn:fn }))
+      .catch(err => {
+        fn(err);
+      });
+    },
+
+    paymentPlan: function getPaymentPlan(corbelDriver, query, domain, fn) {
+      corbelDriver.ec.paymentPlan().getAll(query).then(success.bind({ fn:fn }))
+      .catch(err => {
+        fn(err);
+      });
+    },
+
+    paymentMethod: function getPaymentMethod(corbelDriver, query, domain, fn) {
+      corbelDriver.ec.paymentMethod().get(query).then(success.bind({ fn:fn }))
+      .catch(err => {
+        fn(err);
+      });
+    },
+
+    products: function getProduct(corbelDriver, query, domain, fn) {
+      corbelDriver.ec.product().getAll(query).then(success.bind({ fn:fn }))
+      .catch(err => {
+        fn(err);
+      });
+    }
+  }
+};
 
 CorbelHandler = {
 
@@ -64,8 +90,8 @@ CorbelHandler = {
 
         _.extend(query, QueryTranslator.options(getParams.options), distinct);
 
-        if (collection === 'corbel-users') {
-          getUserData(corbelDriver, query, domain, ( err, res ) => {
+        if (userActions.get[collection]) {
+          userActions.get[collection](corbelDriver, query, domain, ( err, res ) => {
             if (err) {
               future.throw(err);
             }
@@ -169,6 +195,21 @@ CorbelHandler = {
         _.extend(query, QueryTranslator.options(getParams.options));
 
         _.extend(query, QueryTranslator.count(getParams.options));
+
+        if (userActions.get[collection]) {
+          userActions.get[collection](corbelDriver, query, domain, ( err, res ) => {
+            console.log('CCCCOOOOOOOORRRRRBELLLLL', err, res);
+            if (err) {
+              future.throw(err);
+            }
+            else {
+              console.log('CCCCOOOOOOOORRRRRBELLLLL', res.count);
+              future.return(res.count);
+            }
+          });
+
+          return future.wait();
+        }
 
         CorbelHandler
         .getRequest(corbelDriver, relation, query, domain)

@@ -166,9 +166,13 @@ function isUnsupportedUpdateOp (modifier) {
   return false;
 }
 
+
 QueryTranslator = {
+    corbelUser: function (corbelDriver, collection, query, domain, fn) {
+
+    },
+
     query: function (selector) {
-        let query = null;
         if (typeof selector === 'string') {
           return { query: isEq('id', selector) };
         }
