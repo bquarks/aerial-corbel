@@ -36,7 +36,6 @@ let userActions = {
     },
 
     assets: function getAssets(corbelDriver, query, domain, fn) {
-      console.log('to get assets');
       corbelDriver.assets.asset('all').get(query).then(success.bind({ fn:fn }))
       .catch(err => {
         fn(err);
@@ -198,12 +197,10 @@ CorbelHandler = {
 
         if (userActions.get[collection]) {
           userActions.get[collection](corbelDriver, query, domain, ( err, res ) => {
-            console.log('CCCCOOOOOOOORRRRRBELLLLL', err, res);
             if (err) {
               future.throw(err);
             }
             else {
-              console.log('CCCCOOOOOOOORRRRRBELLLLL', res.count);
               future.return(res.count);
             }
           });
