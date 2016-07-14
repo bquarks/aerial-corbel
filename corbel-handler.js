@@ -63,15 +63,15 @@ let userActions = {
       });
     },
 
-    devices: function getDevices(corbelDriver, query, domain, fn) {
+    devices: function getDevices(corbelDriver, query, domain, fn, options) {
       domain = domain || corbelDriver.config.config.domain;
-
-      if (!query || !query.query.$eq || !query.query.$eq.id) {
+      console.log(query);
+      if (!options || !options.deviceuid) {
         fn(null, []);
         return;
       }
 
-      corbelDriver.domain(domain).iam.user(query.query.$eq.id).getDevices()
+      corbelDriver.domain(domain).iam.user(options.deviceuid).getDevices()
         .then(success.bind({ fn:fn }))
         .catch(err => {
           fn(err);
@@ -106,13 +106,14 @@ CorbelHandler = {
 
         if (userActions.get[collection]) {
           userActions.get[collection](corbelDriver, query, domain, ( err, res ) => {
+            console.log(err, res);
             if (err) {
               future.throw(err);
             }
             else {
               future.return(res);
             }
-          });
+          }, getParams.options);
 
           return future.wait();
         }
