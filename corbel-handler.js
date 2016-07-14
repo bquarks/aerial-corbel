@@ -61,6 +61,21 @@ let userActions = {
       .catch(err => {
         fn(err);
       });
+    },
+
+    devices: function getDevices(corbelDriver, query, domain, fn) {
+      domain = domain || corbelDriver.config.config.domain;
+
+      if (!query || !query.query.$eq || !query.query.$eq.id) {
+        fn(null, []);
+        return;
+      }
+
+      corbelDriver.domain(domain).iam.user(query.query.$eq.id).getDevices()
+        .then(success.bind({ fn:fn }))
+        .catch(err => {
+          fn(err);
+        });
     }
   }
 };
