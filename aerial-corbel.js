@@ -29,7 +29,7 @@ AerialRestDriver = function () {
           return;
         }
 
-        let corbelDriver = this._getCorbelDriver();
+        let corbelDriver = this._getCorbelDriver(options.userId);
 
         if (!corbelDriver) {
           return;
@@ -115,11 +115,10 @@ AerialRestDriver = function () {
         return CorbelHandler.remove(corbelDriver, coll.id);
       };
 
-    this._getCorbelDriver = function () {
-        let userId;
+    this._getCorbelDriver = function (userId) {
 
         Tracker.nonreactive(function () {
-            userId = Meteor.userId();
+            userId = userId || Meteor.userId();
           });
 
         if (!userId) {
