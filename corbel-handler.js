@@ -50,7 +50,14 @@ let userActions = {
     },
 
     paymentMethod: function getPaymentMethod(corbelDriver, query, domain, fn) {
-      corbelDriver.ec.paymentMethod().get(query).then(success.bind({ fn:fn }))
+      if (!query && !query.query[0] && !query.query[0].$eq && !query.query[0].$eq.userId) {
+        fn('Wrong query');
+        return;
+      }
+
+      let uId = query.query[0].$eq.userId;
+
+      corbelDriver.ec.paymentMethod().get(uId).then(success.bind({ fn:fn }))
       .catch(err => {
         fn(err);
       });
@@ -190,7 +197,7 @@ CorbelHandler = {
     },
 
     remove( corbelDriver, collection, data, query ) {
-      // TODO
+      // TODO:
     },
 
     distinct( corbelDriver, collection, getParams, distinct ) {
