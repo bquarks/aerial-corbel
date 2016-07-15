@@ -42,6 +42,20 @@ let userActions = {
       });
     },
 
+    payment: function getPayment(corbelDriver, query, domain, fn) {
+      // if (!query && !query.query[0] && !query.query[0].$eq && !query.query[0].$eq.userId) {
+      //   fn('Wrong query');
+      //   return;
+      // }
+      //
+      // let uId = query.query[0].$eq.userId;
+
+      corbelDriver.ec.payment().getAll(query).then(success.bind({ fn:fn }))
+      .catch(err => {
+        fn(err);
+      });
+    },
+
     paymentPlan: function getPaymentPlan(corbelDriver, query, domain, fn) {
       corbelDriver.ec.paymentPlan().getAll(query).then(success.bind({ fn:fn }))
       .catch(err => {
