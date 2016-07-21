@@ -107,12 +107,12 @@ let userActions = {
         return;
       }
 
-      if (!query && !query.query[0] && !query.query[0].$eq && !query.query[0].$eq.id) {
+      if (!query && !query.query[0] && !query.query[0].$eq && !query.query[0].$eq._id) {
         fn('Wrong query');
         return;
       }
 
-      corbelDriver.domain(domain).iam.user(options.deviceuid).deleteDevice(query.query[0].$eq.id)
+      corbelDriver.domain(domain).iam.user(options.deviceuid).deleteDevice(query.query[0].$eq._id)
         .then(success.bind({ fn:fn }))
         .catch(err => {
           fn(err);
