@@ -113,7 +113,9 @@ let userActions = {
       }
 
       corbelDriver.domain(domain).iam.user(options.deviceuid).deleteDevice(query.query[0].$eq._id)
-        .then(success.bind({ fn:fn }))
+        .then(() => {
+          fn(null, 1);
+        })
         .catch(err => {
           fn(err);
         });
