@@ -15,7 +15,7 @@ var parseCorbelError = function (e) {
   };
 
 let success = function onSuccess(res) {
-  if (res.data) {
+  if (res.data || ( res.status >= 200 && res.status < 300 ) ) {
     this.fn(null, res.data);
   }
   else {
@@ -86,13 +86,33 @@ let userActions = {
 
     devices: function getDevices(corbelDriver, query, domain, fn, options) {
       domain = domain || corbelDriver.config.config.domain;
-      console.log(query);
       if (!options || !options.deviceuid) {
         fn(null, []);
         return;
       }
 
       corbelDriver.domain(domain).iam.user(options.deviceuid).getDevices()
+        .then(success.bind({ fn:fn }))
+        .catch(err => {
+          fn(err);
+        });
+    }
+  },
+
+  delete: {
+    devices: function deleteDevice(corbelDriver, query, domain, fn, options) {
+      domain = domain || corbelDriver.config.config.domain;
+      if (!options || !options.deviceuid) {
+        fn(null, 0);
+        return;
+      }
+
+      if (!query && !query.query[0] && !query.query[0].$eq && !query.query[0].$eq.id) {
+        fn('Wrong query');
+        return;
+      }
+
+      corbelDriver.domain(domain).iam.user(options.deviceuid).deleteDevice(query.query[0].$eq.id)
         .then(success.bind({ fn:fn }))
         .catch(err => {
           fn(err);
@@ -127,7 +147,6 @@ CorbelHandler = {
 
         if (userActions.get[collection]) {
           userActions.get[collection](corbelDriver, query, domain, ( err, res ) => {
-            console.log(err, res);
             if (err) {
               future.throw(err);
             }
@@ -138,6 +157,7 @@ CorbelHandler = {
 
           return future.wait();
         }
+
 
         CorbelHandler
         .getRequest(corbelDriver, relation, query, domain)
@@ -210,8 +230,40 @@ CorbelHandler = {
       }
     },
 
-    remove( corbelDriver, collection, data, query ) {
-      // TODO:
+    remove( corbelDriver, collection, getParams ) {
+      if (collection && getParams) {
+        let future = new Future,
+            query = QueryTranslator.query(getParams.selector),
+            relation = QueryTranslator.relation(collection, getParams.options),
+            distinct = QueryTranslator.distinct(getParams.distinct),
+            domain = getParams.options.domain;
+
+        _.extend(query, QueryTranslator.options(getParams.options), distinct);
+
+        if (userActions.delete[collection]) {
+
+          userActions.delete[collection](corbelDriver, query, domain, ( err, res ) => {
+            if (err) {
+              future.throw(err);
+            }
+            else {
+              future.return(res);
+            }
+          }, getParams.options);
+
+          return future.wait();
+        }
+
+      }
+      else {
+        if (!collection) {
+          throw new TypeError('The second parameter must be a collection name');
+        }
+
+        if (!getParams) {
+          throw new TypeError('The third parameter must be a valid get params object');
+        }
+      }
     },
 
     distinct( corbelDriver, collection, getParams, distinct ) {

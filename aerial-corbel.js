@@ -105,14 +105,14 @@ AerialRestDriver = function () {
         return CorbelHandler.update(corbelDriver, coll.name, { selector, modifier, options });
       };
 
-    this.remove = ( coll, selector ) => {
+    this.remove = ( coll, selector, options ) => {
         let corbelDriver = this._getCorbelDriver();
 
         if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== - 1) {
           return;
         }
 
-        return CorbelHandler.remove(corbelDriver, coll.id);
+        return CorbelHandler.remove(corbelDriver, coll.name, { selector, options });
       };
 
     this._getCorbelDriver = function (userId) {

@@ -1,4 +1,4 @@
-const operators = ['$eq', '$gt', '$gte', '$lt', '$lte', '$ne', '$in', '$nin', '$regex', '$elemMatch'],
+const operators = ['$eq', '$gt', '$gte', '$lt', '$lte', '$ne', '$in', '$nin', '$regex', '$elemMatch', '$exists'],
     conditionals = ['$or'],
     _sort = { '-1': 'desc', 1: 'asc' },
     opTranslations = {
