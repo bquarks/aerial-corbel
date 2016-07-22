@@ -249,6 +249,7 @@ CorbelHandler = {
               future.throw(err);
             }
             else {
+              Meteor.call('elephantUpdate', params.selector, {}, params.options, true);
               future.return(res);
             }
           }, getParams.options);
