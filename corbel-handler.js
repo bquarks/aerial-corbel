@@ -99,6 +99,23 @@ let userActions = {
     }
   },
 
+  update: {
+    corbelUsers: function getUserData(corbelDriver, query, domain, data, fn) {
+      domain = domain || corbelDriver.config.config.domain;
+
+      if (typeof query !== 'string') {
+        fn('Wrong query');
+        return;
+      }
+
+      corbelDriver.domain(domain).iam.user(query).update(data)
+        .then(success.bind({ fn:fn }))
+        .catch(err => {
+          fn(err);
+        });
+    }
+  },
+
   delete: {
     devices: function deleteDevice(corbelDriver, query, domain, fn, options) {
       domain = domain || corbelDriver.config.config.domain;
@@ -192,11 +209,28 @@ CorbelHandler = {
 
     update( corbelDriver, collectionName, params ) {
       if (collectionName && params) {
+        console.log(params);
         let future = new Future,
             options = params.options,
             domain = options.domain,
             data = QueryTranslator.getUpdateModifier(params.modifier),
             query = !params.selector._id && !params.selector.id ? QueryTranslator.query(params.selector) : params.selector._id || params.selector.id;
+
+
+        if (userActions.update[collectionName]) {
+          userActions.update[collectionName](corbelDriver, query, domain, data, ( err, res ) => {
+            if (err) {
+              console.log(err);
+              future.throw(err);
+            }
+            else {
+              console.log(res);
+              future.return(res);
+            }
+          }, params.options);
+
+          return future.wait();
+        }
 
         CorbelHandler
         .updateRequest(corbelDriver, collectionName, query, data, options, domain)
