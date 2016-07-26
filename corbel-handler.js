@@ -209,7 +209,6 @@ CorbelHandler = {
 
     update( corbelDriver, collectionName, params ) {
       if (collectionName && params) {
-        console.log(params);
         let future = new Future,
             options = params.options,
             domain = options.domain,
@@ -220,11 +219,10 @@ CorbelHandler = {
         if (userActions.update[collectionName]) {
           userActions.update[collectionName](corbelDriver, query, domain, data, ( err, res ) => {
             if (err) {
-              console.log(err);
               future.throw(err);
             }
             else {
-              console.log(res);
+              Meteor.call('elephantUpdate', params.selector, params.modifier, params.options);
               future.return(res);
             }
           }, params.options);
