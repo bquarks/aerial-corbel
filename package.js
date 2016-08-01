@@ -1,6 +1,6 @@
 Package.describe({
     name: 'bquarks:aerial-corbel',
-    version: '0.3.9',
+    version: '0.3.10',
 
     // Brief, one-line summary of the package.
     summary: 'Low level corbel api handler and tranlator',
@@ -17,6 +17,7 @@ Package.onUse(function (api) {
     api.versionsFrom('1.3.1');
     api.use('ecmascript');
     api.addFiles('corbel-query-translator.js', ['server']);
+    api.addFiles('specific-modules-translations.js', ['server']);
     api.addFiles('corbel-handler.js', ['server']);
     api.mainModule('aerial-corbel.js', ['server']);
 

@@ -56,7 +56,6 @@ AerialRestDriver = function () {
 
         let toRemove = _.without.apply(_, args);
 
-
         _.each(corbelDocs, doc => {
 
             doc._id = doc.id;
