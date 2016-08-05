@@ -168,10 +168,6 @@ function isUnsupportedUpdateOp (modifier) {
 
 
 QueryTranslator = {
-    corbelUser: function (corbelDriver, collection, query, domain, fn) {
-
-    },
-
     query: function (selector) {
         if (typeof selector === 'string') {
           return { query: isEq('id', selector) };
