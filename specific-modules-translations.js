@@ -117,7 +117,7 @@ userActions = {
       }
 
       handlePromise(
-        corbelDriver.domain(domain).iam.user(query).update(data),
+        domain.iam.user(query).update(data),
         fn
       );
     }
@@ -138,7 +138,7 @@ userActions = {
       }
 
       handlePromise(
-        corbelDriver.domain(domain).iam.user(options.deviceuid).deleteDevice(id),
+        domain.iam.user(options.deviceuid).deleteDevice(id),
         fn
       );
     },
