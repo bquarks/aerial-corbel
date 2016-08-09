@@ -1,6 +1,6 @@
 Package.describe({
     name: 'bquarks:aerial-corbel',
-    version: '0.3.11',
+    version: '0.3.12',
 
     // Brief, one-line summary of the package.
     summary: 'Low level corbel api handler and tranlator',

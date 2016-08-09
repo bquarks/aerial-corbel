@@ -56,6 +56,10 @@ AerialRestDriver = function () {
 
         let toRemove = _.without.apply(_, args);
 
+        _.each(toRemove, doc => {
+          coll.remove(doc);
+        });
+
         _.each(corbelDocs, doc => {
 
             doc._id = doc.id;
@@ -69,9 +73,6 @@ AerialRestDriver = function () {
             }
           });
 
-        _.each(toRemove, doc => {
-            coll.remove(doc);
-          });
       };
 
     this.count = ( coll, selector, options ) => {
