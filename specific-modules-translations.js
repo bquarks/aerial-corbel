@@ -1,4 +1,5 @@
 let success = function onSuccess(res) {
+  console.log(res.data);
   if (res.data || ( res.status >= 200 && res.status < 300 ) ) {
     this.fn(null, res.data);
   }
@@ -36,6 +37,7 @@ let handlePromise = function handlePromise(promise, fn) {
   promise
     .then(success.bind({ fn:fn }))
     .catch(err => {
+      console.log(err);
       fn(err);
     });
 };
@@ -91,6 +93,7 @@ userActions = {
     },
 
     devices: function getDevices(corbelDriver, query, domain, fn, options) {
+
       domain = getDomain(domain, corbelDriver);
       if (!options || !options.deviceuid) {
         fn(null, []);
@@ -98,7 +101,7 @@ userActions = {
       }
 
       handlePromise(
-        corbelDriver.domain(domain).iam.user(options.deviceuid).getDevices(),
+        domain.iam.user(options.deviceuid).getDevices(),
         fn
       );
     }
