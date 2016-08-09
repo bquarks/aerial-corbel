@@ -144,7 +144,7 @@ CorbelHandler = {
             query = QueryTranslator.query(getParams.selector),
             relation = QueryTranslator.relation(collection, getParams.options),
             distinct = QueryTranslator.distinct(getParams.distinct),
-            domain = getParams.options.domain;
+            domain = getParams.options && getParams.options.domain;
 
         _.extend(query, QueryTranslator.options(getParams.options), distinct);
 
