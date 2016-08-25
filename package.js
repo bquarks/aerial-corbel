@@ -1,6 +1,6 @@
 Package.describe({
     name: 'bquarks:aerial-corbel',
-    version: '0.3.15',
+    version: '0.3.16',
 
     // Brief, one-line summary of the package.
     summary: 'Low level corbel api handler and tranlator',
@@ -21,7 +21,7 @@ Package.onUse(function (api) {
     api.addFiles('corbel-handler.js', ['server']);
     api.mainModule('aerial-corbel.js', ['server']);
 
-    api.export('AerialRestDriver', ['server']);
+    api.export('AerialRestDriver', 'server');
   });
 
 Package.onTest(function (api) {

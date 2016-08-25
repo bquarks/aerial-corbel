@@ -168,17 +168,42 @@ function isUnsupportedUpdateOp (modifier) {
 
 
 QueryTranslator = {
-    query: function (selector) {
-        if (typeof selector === 'string') {
-          return { query: isEq('id', selector) };
-        }
-        else if (typeof selector === 'object' && Object.keys(selector).length !== 0) {
-          return queryWalker(selector);
+    query: function (selector, multi) {
+      let query;
+
+      if (typeof selector === 'string') {
+        if (multi) {
+          return { condition: [ isEq('id', selector) ] };
         }
         else {
-          return {};
+          query = { query: isEq('id', selector) };
         }
-      },
+
+        return query;
+      }
+      else if (typeof selector === 'object' && Object.keys(selector).length !== 0) {
+        let query = queryWalker(selector);
+
+        if (multi) {
+          query = { condition: query.query || query.queries };
+        }
+
+        return query;
+      }
+      else {
+        return {};
+      }
+    },
+
+    getUpdateQuery: function (selector, options) {
+      if (selector._id || selector.id && !options.multi) {
+        return selector._id || selector.id;
+      }
+      else {
+        return this.query(selector, options.multi);
+      }
+    },
+
 
     getUpdateModifier: function (modifier) {
         if (modifier[updateOp]) {

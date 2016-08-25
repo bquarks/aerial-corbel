@@ -83,12 +83,12 @@ CorbelHandler = {
 
     update( corbelDriver, collectionName, params ) {
       if (collectionName && params) {
+
         let future = new Future,
             options = params.options,
             domain = options.domain,
             data = QueryTranslator.getUpdateModifier(params.modifier),
-            query = !params.selector._id && !params.selector.id ? QueryTranslator.query(params.selector) : params.selector._id || params.selector.id;
-
+            query = QueryTranslator.getUpdateQuery(params.selector, options);
 
         if (userActions.update[collectionName]) {
           userActions.update[collectionName](corbelDriver, query, domain, data, ( err, res ) => {
@@ -104,6 +104,10 @@ CorbelHandler = {
           return future.wait();
         }
 
+        corbelDriver.on('request', function (req) {
+          console.dir(req);
+        });
+
         CorbelHandler
         .updateRequest(corbelDriver, collectionName, query, data, options, domain)
         .then(( res ) => {
@@ -113,6 +117,7 @@ CorbelHandler = {
             }
           })
         .catch(( e ) => {
+            console.log('error updating');
             future.throw(parseCorbelError(e));
           });
 

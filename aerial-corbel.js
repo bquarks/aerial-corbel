@@ -1,6 +1,5 @@
 /* jshint esversion: 6 */
 
-
 // Write your package code here!
 
 // Variables exported by this module can be imported by other packages and
@@ -11,7 +10,7 @@ let CH = null,
     Future = Npm.require(path.join('fibers', 'future')),
     Fiber = Npm.require('fibers');
 
-AerialRestDriver = function () {
+Meteor.AerialRestDriver = AerialRestDriver = function () {
 
     let _cached = {};
 
@@ -94,14 +93,23 @@ AerialRestDriver = function () {
         return CorbelHandler.distinct(corbelDriver, coll.name, { selector, options }, dist);
       };
 
-    this.update = ( coll, selector={}, modifier, options={} ) => {
+    this.update = ( coll, selector={}, modifier, options={}) => {
+        let colName = typeof coll === 'string' ? coll : coll.name || coll._name;
+
         let corbelDriver = this._getCorbelDriver();
 
-        if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== - 1) {
+        if (!corbelDriver) {
+          console.log('not corbel driver');
           return;
         }
 
-        return CorbelHandler.update(corbelDriver, coll.name, { selector, modifier, options });
+        if (colName === 'users' || colName.indexOf('meteor') !== - 1) {
+            console.log('users or meteor collection');
+           return;
+        }
+
+
+        return CorbelHandler.update(corbelDriver, colName, { selector, modifier, options });
       };
 
     this.remove = ( coll, selector, options ) => {
@@ -118,7 +126,7 @@ AerialRestDriver = function () {
 
         Tracker.nonreactive(function () {
             userId = userId || Meteor.userId();
-          });
+        });
 
         if (!userId) {
           return;
@@ -132,14 +140,14 @@ AerialRestDriver = function () {
         }
 
         let refreshTokenCallback = function (newTokenData) {
-            console.log('refresh token');
-            Accounts.refreshUserToken(userId, newTokenData);
-          };
+          console.log('refresh token');
+          Accounts.refreshUserToken(userId, newTokenData);
+        };
 
         let onRequestCallback = function (request) {
-            corbelDriver.off('token:refresh', refreshTokenCallback);
-            corbelDriver.off('service:request:after', onRequestCallback);
-          };
+          corbelDriver.off('token:refresh', refreshTokenCallback);
+          corbelDriver.off('service:request:after', onRequestCallback);
+        };
 
         corbelDriver.on('token:refresh', refreshTokenCallback);
 
