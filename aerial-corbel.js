@@ -75,42 +75,42 @@ Meteor.AerialRestDriver = AerialRestDriver = function () {
       };
 
     this.count = ( coll, selector, options ) => {
-        let corbelDriver = this._getCorbelDriver();
+      let corbelDriver = this._getCorbelDriver();
 
-        if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== - 1) {
-          return;
-        }
+      if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== - 1) {
+        return;
+      }
 
-        return CorbelHandler.count(corbelDriver, coll.name, { selector, options });
-      };
+      return CorbelHandler.count(corbelDriver, coll.name, { selector, options });
+    };
 
     this.distinct = ( coll, selector, options, dist ) => {
-        let corbelDriver = this._getCorbelDriver();
+      let corbelDriver = this._getCorbelDriver();
 
-        if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== - 1) {
-          return;
-        }
-        return CorbelHandler.distinct(corbelDriver, coll.name, { selector, options }, dist);
-      };
+      if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== - 1) {
+        return;
+      }
+      return CorbelHandler.distinct(corbelDriver, coll.name, { selector, options }, dist);
+    };
 
     this.update = ( coll, selector={}, modifier, options={}) => {
-        let colName = typeof coll === 'string' ? coll : coll.name || coll._name;
+      let colName = typeof coll === 'string' ? coll : coll.name || coll._name;
 
-        let corbelDriver = this._getCorbelDriver();
+      let corbelDriver = this._getCorbelDriver();
 
-        if (!corbelDriver) {
-          console.log('not corbel driver');
-          return;
-        }
+      if (!corbelDriver) {
+        console.log('not corbel driver');
+        return;
+      }
 
-        if (colName === 'users' || colName.indexOf('meteor') !== - 1) {
-            console.log('users or meteor collection');
-           return;
-        }
+      if (colName === 'users' || colName.indexOf('meteor') !== - 1) {
+          console.log('users or meteor collection');
+         return;
+      }
 
 
-        return CorbelHandler.update(corbelDriver, colName, { selector, modifier, options });
-      };
+      return CorbelHandler.update(corbelDriver, colName, { selector, modifier, options });
+    };
 
     this.remove = ( coll, selector, options ) => {
         let corbelDriver = this._getCorbelDriver();

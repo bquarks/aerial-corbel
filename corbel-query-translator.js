@@ -156,6 +156,19 @@ function queryWalker(selectors, field) {
   return ret;
 }
 
+function pluckQueryKeyFromQueries (queries) {
+  let qs = [];
+
+  for (let i = 0; i < queries.length ; i++) {
+    let q = queries[i];
+    // console.log('query i: ', JSON.stringify(q));
+    qs.push(_.isArray(q.query) ? q.query[0] : q.query);
+  }
+
+  return qs;
+}
+
+
 function isUnsupportedUpdateOp (modifier) {
   for (let op in unsupportedUpdateOp) {
     if (modifier[op]) {
@@ -182,13 +195,23 @@ QueryTranslator = {
         return query;
       }
       else if (typeof selector === 'object' && Object.keys(selector).length !== 0) {
-        let query = queryWalker(selector);
+        let q = queryWalker(selector);
 
-        if (multi) {
-          query = { condition: query.query || query.queries };
+        if (multi && q.queries) {
+          let qs = pluckQueryKeyFromQueries(q.queries),
+              cond = [];
+
+          _.each(qs, function (_q, i) {
+            cond.push({ condition: _q });
+          });
+
+          q =  { conditions: cond };
+        }
+        else if (multi) {
+          q = { condition: q.query };
         }
 
-        return query;
+        return q;
       }
       else {
         return {};

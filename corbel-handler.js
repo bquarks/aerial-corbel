@@ -104,10 +104,6 @@ CorbelHandler = {
           return future.wait();
         }
 
-        corbelDriver.on('request', function (req) {
-          console.dir(req);
-        });
-
         CorbelHandler
         .updateRequest(corbelDriver, collectionName, query, data, options, domain)
         .then(( res ) => {
