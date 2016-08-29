@@ -112,14 +112,16 @@ Meteor.AerialRestDriver = AerialRestDriver = function () {
       return CorbelHandler.update(corbelDriver, colName, { selector, modifier, options });
     };
 
-    this.remove = ( coll, selector, options ) => {
+    this.remove = ( colName, selector, options ) => {
         let corbelDriver = this._getCorbelDriver();
 
-        if (!corbelDriver || coll.name === 'users' || coll.name.indexOf('meteor') !== - 1) {
+        console.log('remmm');
+
+        if (!corbelDriver || colName === 'users' || colName.indexOf('meteor') !== - 1) {
           return;
         }
-
-        return CorbelHandler.remove(corbelDriver, coll.name, { selector, options });
+        console.log('remmm');
+        return CorbelHandler.remove(corbelDriver, colName, { selector, options });
       };
 
     this._getCorbelDriver = function (userId) {

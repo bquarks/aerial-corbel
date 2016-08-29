@@ -60,7 +60,7 @@ CorbelHandler = {
             }
           })
         .catch(( e ) => {
-            Meteor.call('elephantInvalidate', getParams.options.MD5);
+            // Meteor.call('elephantInvalidate', getParams.options.MD5);
             future.throw(parseCorbelError(e));
           });
 
@@ -93,31 +93,33 @@ CorbelHandler = {
         if (userActions.update[collectionName]) {
           userActions.update[collectionName](corbelDriver, query, domain, data, ( err, res ) => {
             if (err) {
+              console.log('error en handler');
               future.throw(err);
             }
             else {
-              Meteor.call('elephantUpdate', params.selector, params.modifier, params.options);
+              // Meteor.call('elephantUpdate', params.selector, params.modifier, params.options);
               future.return(res);
             }
           }, params.options);
 
           return future.wait();
         }
-
-        CorbelHandler
-        .updateRequest(corbelDriver, collectionName, query, data, options, domain)
-        .then(( res ) => {
+        else {
+          CorbelHandler
+          .updateRequest(corbelDriver, collectionName, query, data, options, domain)
+          .then(( res ) => {
             if (res) {
-              Meteor.call('elephantUpdate', params.selector, params.modifier, params.options);
+              // Meteor.call('elephantUpdate', params.selector, params.modifier, params.options);
               future.return(res.data);
             }
           })
-        .catch(( e ) => {
+          .catch(( e ) => {
             console.log('error updating');
             future.throw(parseCorbelError(e));
           });
 
-        return future.wait();
+          return future.wait();
+        }
       }
       else {
         if (!collectionName) {
@@ -148,7 +150,6 @@ CorbelHandler = {
             domain = getParams.options && getParams.options.domain;
 
         _.extend(query, QueryTranslator.options(getParams.options), distinct);
-
         if (userActions.delete[collection]) {
 
           userActions.delete[collection](corbelDriver, query, domain, ( err, res ) => {
@@ -156,7 +157,7 @@ CorbelHandler = {
               future.throw(err);
             }
             else {
-              Meteor.call('elephantUpdate', getParams.selector, {}, getParams.options, true);
+              // Meteor.call('elephantUpdate', getParams.selector, {}, getParams.options, true);
               future.return(res);
             }
           }, getParams.options);

@@ -1,6 +1,10 @@
 let success = function onSuccess(res) {
+  console.log('success');
   console.log(res.data);
   if (res.data || ( res.status >= 200 && res.status < 300 ) ) {
+    console.log('calling fn: ', JSON.stringify(this.fn));
+    console.log(typeof this.fn);
+
     this.fn(null, res.data);
   }
   else {
@@ -14,7 +18,7 @@ let getDomain = function getDomain(domain, driver) {
   return driver.domain(domain);
 };
 
-let getId = function getId(query, field) {
+let getField = function getField(query, field) {
   if (!query && !query.query[0] && !query.query[0].$eq && !query.query[0].$eq[field || '_id']) {
     return false;
   }
@@ -23,7 +27,7 @@ let getId = function getId(query, field) {
 };
 
 let checkId = function checkId(query, fn) {
-  let id = getId(query);
+  let id = getField(query);
 
   if (!id) {
     fn('Wrong query');
@@ -37,7 +41,8 @@ let handlePromise = function handlePromise(promise, fn) {
   promise
     .then(success.bind({ fn:fn }))
     .catch(err => {
-      console.log(err);
+      console.log('error');
+      console.dir(err);
       fn(err);
     });
 };
@@ -73,7 +78,7 @@ userActions = {
     },
 
     paymentMethod: function getPaymentMethod(corbelDriver, query, domain, fn) {
-      const id = getId(query, 'userId');
+      const id = getField(query, 'userId');
 
       if (!id) {
         fn('Wrong query');
@@ -108,13 +113,22 @@ userActions = {
   },
 
   update: {
-    corbelUsers: function getUserData(corbelDriver, query, domain, data, fn) {
+    user: function getUserData(corbelDriver, query, domain, data, fn) {
       domain = getDomain(domain, corbelDriver);
 
       if (typeof query !== 'string') {
         fn('Wrong query');
         return;
       }
+
+      corbelDriver.on('request', function (req) {
+        console.log('request');
+        console.dir(req);
+      });
+
+      // domain.iam.user(query).update(data).then(function () {
+      //   console.log('success');
+      // });
 
       handlePromise(
         domain.iam.user(query).update(data),
@@ -126,19 +140,24 @@ userActions = {
   delete: {
     devices: function deleteDevice(corbelDriver, query, domain, fn, options) {
       domain = getDomain(domain, corbelDriver);
-      if (!options || !options.deviceuid) {
+      if (!options || !options.userId) {
         fn(null, 0);
         return;
       }
 
-      let id = checkId(query);
+      let uid = getField(query, 'uid');
 
-      if (!id) {
+      if (!uid) {
         return;
       }
 
+      corbelDriver.on('request', function (req) {
+        console.log('request');
+        console.dir(req);
+      });
+
       handlePromise(
-        domain.iam.user(options.deviceuid).deleteDevice(id),
+        domain.iam.user(options.userId).deleteDevice(uid),
         fn
       );
     },
@@ -156,12 +175,19 @@ userActions = {
       );
     },
 
-    paymentPlan: function deletePaymentPlan(corbelDriver, query, domain, fn) {
-      let id = checkId(query);
+    paymentPlan: function deletePaymentPlan(corbelDriver, query, options, fn) {
+      let id = getField(query, '_id');
 
       if (!id) {
+        console.log('not payment plan id');
         return;
       }
+
+      corbelDriver.on('request', function (req) {
+        console.dir(req);
+      });
+
+      console.log('plan id: ', id);
 
       handlePromise(
         corbelDriver.ec.paymentPlan().delete(id),
