@@ -164,6 +164,25 @@ CorbelHandler = {
 
           return future.wait();
         }
+        else {
+          if (!getParams.options.multi) {
+            query = query.query[0].$eq._id;
+          }
+          CorbelHandler
+          .removeRequest(corbelDriver, collection, query, getParams.options, domain)
+          .then(( res ) => {
+            if (res) {
+              // Meteor.call('elephantUpdate', params.selector, params.modifier, params.options);
+              future.return();
+            }
+          })
+          .catch(( e ) => {
+            console.log('error removing');
+            future.throw(parseCorbelError(e));
+          });
+
+          return future.wait();
+        }
 
       }
       else {
@@ -174,6 +193,17 @@ CorbelHandler = {
         if (!getParams) {
           throw new TypeError('The third parameter must be a valid get params object');
         }
+      }
+    },
+
+    removeRequest: function ( corbelDriver, colName, query, options, domain ) {
+      let curDomain = domain || corbelDriver.config.config.domain;
+
+      if ( ( _.isObject(query) ) || options.multi) { //Update all documents in a collection
+        return corbelDriver.domain(curDomain).resources.collection(colName).delete(query);
+      }
+      else {
+        return corbelDriver.domain(curDomain).resources.resource(colName, query).delete(); // The query is a document id
       }
     },
 
