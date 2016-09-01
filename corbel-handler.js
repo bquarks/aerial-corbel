@@ -78,7 +78,20 @@ CorbelHandler = {
     },
 
     insert( corbelDriver, collection, doc ) {
-      // TODO: this couldn't be necesary
+      let curDomain = domain || corbelDriver.config.config.domain,
+          future = new Future;
+
+      corbelDriver.domain(domain).resources.collection(collection).add(doc)
+        .then(res => {
+          if (res && res.data) {
+            future.return(res.data);
+          }
+        })
+        .catch(e => {
+          future.throw(parseCorbelError(e));
+        });
+
+      return future.wait();
     },
 
     update( corbelDriver, collectionName, params ) {

@@ -93,7 +93,7 @@ Meteor.AerialRestDriver = AerialRestDriver = function () {
       return CorbelHandler.distinct(corbelDriver, coll.name, { selector, options }, dist);
     };
 
-    this.update = ( coll, selector={}, modifier, options={}) => {
+    this.update = ( coll, selector={}, modifier, options={} ) => {
       let colName = typeof coll === 'string' ? coll : coll.name || coll._name;
 
       let corbelDriver = this._getCorbelDriver();
@@ -104,8 +104,8 @@ Meteor.AerialRestDriver = AerialRestDriver = function () {
       }
 
       if (colName === 'users' || colName.indexOf('meteor') !== - 1) {
-          console.log('users or meteor collection');
-         return;
+        console.log('users or meteor collection');
+        return;
       }
 
 
@@ -115,20 +115,29 @@ Meteor.AerialRestDriver = AerialRestDriver = function () {
     this.remove = ( colName, selector, options ) => {
         let corbelDriver = this._getCorbelDriver();
 
-        console.log('remmm');
-
         if (!corbelDriver || colName === 'users' || colName.indexOf('meteor') !== - 1) {
           return;
         }
-        console.log('remmm');
+
         return CorbelHandler.remove(corbelDriver, colName, { selector, options });
       };
+
+    this.insert = ( colName, doc ) => {
+      let corbelDriver = this._getCorbelDriver();
+
+      if (!corbelDriver || colName === 'users' || colName.indexOf('meteor') !== - 1) {
+        return;
+      }
+
+      return CorbelHandler.insert(corbelDriver, colName, doc);
+    };
+
 
     this._getCorbelDriver = function (userId) {
 
         Tracker.nonreactive(function () {
             userId = userId || Meteor.userId();
-        });
+          });
 
         if (!userId) {
           return;
@@ -157,6 +166,7 @@ Meteor.AerialRestDriver = AerialRestDriver = function () {
 
         return corbelDriver;
       };
+
 
     this.configured = true;
 
