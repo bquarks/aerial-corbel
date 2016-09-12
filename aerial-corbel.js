@@ -99,7 +99,7 @@ Meteor.AerialRestDriver = AerialRestDriver = function () {
       let corbelDriver = this._getCorbelDriver();
 
       if (!corbelDriver) {
-        console.log('not corbel driver');
+        console.log('no corbel driver');
         return;
       }
 
@@ -128,7 +128,7 @@ Meteor.AerialRestDriver = AerialRestDriver = function () {
       if (!corbelDriver || colName === 'users' || colName.indexOf('meteor') !== - 1) {
         return;
       }
-      console.log('inserting....');
+
       return CorbelHandler.insert(corbelDriver, colName, doc, opts.domain);
     };
 

@@ -83,13 +83,17 @@ CorbelHandler = {
 
       corbelDriver.domain(domain).resources.collection(collection).add(doc)
         .then(res => {
-          console.log(res);
+          console.log('inserted');
           if (res && res.data) {
             future.return(res.data);
           }
+          else {
+            future.return(res);
+          }
         })
         .catch(e => {
-          console.log(e);
+          console.log('error on inserted');
+          console.dir(e);
           future.throw(parseCorbelError(e));
         });
 
@@ -108,7 +112,6 @@ CorbelHandler = {
         if (userActions.update[collectionName]) {
           userActions.update[collectionName](corbelDriver, query, domain, data, ( err, res ) => {
             if (err) {
-              console.log('error en handler');
               future.throw(err);
             }
             else {
@@ -124,12 +127,12 @@ CorbelHandler = {
           .updateRequest(corbelDriver, collectionName, query, data, options, domain)
           .then(( res ) => {
             if (res) {
+              console.log('success');
               // Meteor.call('elephantUpdate', params.selector, params.modifier, params.options);
               future.return(res.data);
             }
           })
           .catch(( e ) => {
-            console.log('error updating');
             future.throw(parseCorbelError(e));
           });
 
@@ -188,6 +191,7 @@ CorbelHandler = {
           .then(( res ) => {
             if (res) {
               // Meteor.call('elephantUpdate', params.selector, params.modifier, params.options);
+              console.log('success removing');
               future.return();
             }
           })
